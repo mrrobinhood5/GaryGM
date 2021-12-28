@@ -4,7 +4,7 @@ from disnake.ext.commands import option_enum
 
 
 EntryPoint = option_enum({"Docks": "922262282539507752", "Gate": "922262406317633536", "Slums": "922262527587532830"})
-
+DEFAULT_PC_AVATAR = 'https://i.imgur.com/v47ed3Y.jpg'
 
 class Player:
 

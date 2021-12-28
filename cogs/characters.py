@@ -1,6 +1,6 @@
 from disnake.ext import commands
 from disnake import ApplicationCommandInteraction, RawReactionActionEvent, PartialEmoji, Member, Message, Role
-from utils.characters import Player, EntryPoint, Approval
+from utils.characters import Player, EntryPoint, Approval, DEFAULT_PC_AVATAR
 from utils.help import Menu
 from config import APPROVAL_CHANNEL, APPROVAL_REACTION, NEW_PLAYER_ROLE
 
@@ -23,7 +23,7 @@ class SetupCharacter(commands.Cog, name='Setup Character'):
             backstory: str,
             prefix: str,
             entry_point: EntryPoint,
-            avatar: str = None):
+            avatar: str = DEFAULT_PC_AVATAR):
         """ Command to register a new Player Character
 
         Parameters
@@ -40,7 +40,7 @@ class SetupCharacter(commands.Cog, name='Setup Character'):
             'character': name.title(),
             'player': str(inter.author.id),
             'approved': False,
-            'avatar': 'https://i.imgur.com/v47ed3Y.jpg',
+            'avatar': avatar,
             'backstory': backstory,
             'keys': [],
             'location': entry_point,
