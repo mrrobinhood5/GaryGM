@@ -52,6 +52,7 @@ class Agreement(disnake.ui.View):
     @disnake.ui.button(label="I Agree", style=ButtonStyle.green)
     async def agree(self, button: disnake.ui.Button, inter: disnake.MessageInteraction):
         me = self.guild.get_member(inter.author.id)
+        # TODO: Add New Player Role to bot
         role = self.guild.get_role(921113949691334706)
         await me.add_roles(role)
         await inter.response.edit_message(
@@ -64,7 +65,7 @@ class Agreement(disnake.ui.View):
             view=None)
 
 # TODO: Move the help pages to DB and make a way to add/edit
-def create_help_pages():
+def create_help_pages(inter):
     # get them from the database
     embeds = []
     db = [{"title": "Server Rules",
@@ -77,7 +78,7 @@ def create_help_pages():
                       ("Racism, Bigotry, Discrimination",
                        "No discriminating against real world races, genders, sexuality, conditions, or social status. This will be an instant ban."),
                       ("Enjoy Yourself!", "The purpose of this server is to play D&D with others and have fun.")]},
-          {"title": "Game Rules",
+          {"title": "Character Rules",
            "description": "Rules specific to the game",
            "thumbnail": "https://i.imgur.com/0102Ab8.png",
            "fields": [("Sources", "We only use official 5e sources. No Homebrew or Playtest materials"),
@@ -86,19 +87,24 @@ def create_help_pages():
                        "Your first character will be level 3 or below, unlock a second character at level 5 (can start at level 5), but your backstory should match your level.\nUse point-buy or standard array for your stats, and fixed HP progression"),
                       ("RAW", "Unless otherwise stated by a DM on quest, we follow RAW as close as possible"),
                       ("DM", "As in a real table, DM has final say so on adjudication.")]},
+          {"title": "RolePlay Rules",
+           "description": "Rules regarding role play in the server.",
+           "thumbnail": "https://i.imgur.com/0102Ab8.png",
+           "fields": [("eRP", "Erotic Role Play is not allowed in this server. You must take these conversations outside of the server"),
+                      ("Gore / Violence", "Graphic Gore / Violence is not allowed unless all parties agree to the scene beforehand, and everyone opts in for it to be roleplayed"),
+                      ("No means No", "If another player says **NO** in character, it means **DONT DO IT** out of character. You will be banned for a violation of this.")]},
           {"title": "Quickstart",
            "description": "A quick step by step",
            "thumbnail": "https://i.imgur.com/0102Ab8.png",
            "fields": [("First things Fist", "Stop by and say hello to everyone in <#920857756649545770>"),
                       ("Load and Configure",
-                       "Channel <#922721043917987930> is used to load and configure. `!initial` command will have a step by step"),
-                      ("~TupperBot and RP alias~",
-                       "Channel <#923433287890919424> is used to load and configure your Tupper bot for RPing. `tul!help` has more info"),
-                      ("Character Setup", "Submit your backstory, character name and image to `/character add`"),
-                      ("Points of Entry", "You can start RP in either the #north-gate or the #docks"),
+                       "Channel <#922721043917987930> is used to load and configure a character from D&D Beyond, GSheet, or Dicecloud. `!initial` command will have a step by step"),
+                      ("Character Setup", "Submit your backstory, character name, RP prefix and image to `/character add`"),
+                      ("Points of Entry", "Depending on your backstory, you can start RP in the Docks, North Gate, or Slums"),
                       ("Fast Travel",
-                       "You can only see channel categories where you have characters. You can always `/fast_travel`")]}]
-    for entry in db:
+                       "You can only see channel categories where you have characters. You can always `/fast_travel` to explore different areas of the city.")]}]
+
+    for entry in inter.bot.help_pages:
         embed = Embed(title=entry['title'], description=entry['description'], color=Color.random())
         embed.set_thumbnail(url=entry['thumbnail'])
         for field in entry['fields']:

@@ -27,7 +27,6 @@ class Help(commands.Cog, name='Help'):
 
     @commands.Cog.listener()
     async def on_member_join(self, member: Member):
-
         await self.omj(member, member)
 
     @commands.slash_command()
@@ -35,7 +34,7 @@ class Help(commands.Cog, name='Help'):
                    inter: ApplicationCommandInteraction):
         """Quick Reference Help"""
         # Creates the embeds as a list.
-        embeds = create_help_pages()
+        embeds = create_help_pages(inter)
 
         # Sets the footer of the first embed.
         embeds[0].set_footer(text=f"Kerna - Path of the Wicked | Page 1 of {len(embeds)}")

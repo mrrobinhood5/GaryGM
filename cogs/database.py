@@ -8,6 +8,7 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
         self.bot = bot
         self.db = self.bot.db
         self.prefixes_cache.start()
+        self.help_pages_cache.start()
 
     @tasks.loop(seconds=60.0)
     async def prefixes_cache(self):
@@ -22,6 +23,15 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
         self.bot.pc_prefixes = valid_prefixes
         # TODO: Add another bot attibute to store NPC prefix cache
 
+    @tasks.loop(seconds=600.0)
+    async def help_pages_cache(self):
+        """ Runs every 10 minutes to maintain a chached list of the help pages"""
+        hp = []
+        cursor = self.db.help.find()
+        async for i in cursor:
+            hp.append(i)
+        self.bot.help_pages = hp
+
     @prefixes_cache.before_loop
     async def before_db(self):
         """ Keeps the task from running before the bot is ready """
@@ -29,8 +39,13 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
         await self.bot.wait_until_ready()
         print('DB Caches is now running...')
 
+    @help_pages_cache.before_loop
+    async def before_db(self):
+        await self.bot.wait_until_ready()
+
     def cog_unload(self):
         self.prefixes_cache.cancel()
+        self.help_pages_cache.cancel()
 
 
 def setup(bot):
