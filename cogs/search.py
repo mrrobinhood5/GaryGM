@@ -20,7 +20,7 @@ class Search(commands.Cog, name='ChannelSearch'):
         for channel in inter.guild.channels:
             if type(channel) != CategoryChannel:
                 if channel.topic:
-                    if keyword in channel.topic:
+                    if keyword.lower() in channel.topic.lower():
                         t.add_field(name=f'{channel.category.name.title()}',
                                     value=f'*{channel.mention}*\n'
                                           f'{channel.topic}')

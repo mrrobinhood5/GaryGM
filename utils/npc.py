@@ -1,6 +1,7 @@
 import disnake
 from disnake import ApplicationCommandInteraction, Embed
 
+# TODO: Move this to bot attrs
 DEFAULT_NPC_AVATAR = 'https://i.imgur.com/ET6JF3H.png'
 
 

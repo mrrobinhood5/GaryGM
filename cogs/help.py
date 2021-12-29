@@ -10,7 +10,7 @@ class Help(commands.Cog, name='Help'):
 
     @commands.command()
     async def omj(self, ctx, member: Member):
-        """Quick Reference Welcome"""
+        """Used to re-send welcome messages to members that didnt Agree to the Terms"""
 
         # Creates the embeds as a list.
         embeds = create_help_pages()
@@ -19,13 +19,16 @@ class Help(commands.Cog, name='Help'):
         embeds[0].set_footer(text=f"Kerna - Path of the Wicked | Page 1 of {len(embeds)}")
         embeds[0].set_thumbnail(url="https://i.imgur.com/0102Ab8.png")
         # Sends first embed with the buttons, it also passes the embeds list into the View class.
-        # await inter.send(embed=embeds[0], view=Menu(embeds), ephemeral=True)
         if not member.dm_channel:
             await member.create_dm()
 
         await member.dm_channel.send(embeds=[embeds[0]], view=Menu(embeds))
         await member.dm_channel.send(content="Once you have read all the rules click below", view=Agreement(ctx.guild))
 
+    @commands.Cog.listener()
+    async def on_member_join(self, member: Member):
+
+        await self.omj(member, member)
 
     @commands.slash_command()
     async def help(self,
@@ -36,7 +39,6 @@ class Help(commands.Cog, name='Help'):
 
         # Sets the footer of the first embed.
         embeds[0].set_footer(text=f"Kerna - Path of the Wicked | Page 1 of {len(embeds)}")
-
 
         await inter.send(embed=embeds[0], view=Menu(embeds), ephemeral=True)
 

@@ -23,4 +23,5 @@ cogs.remove("__pycache__") if "__pycache__" in cogs else 0
 # GAME CONSTANTS
 APPROVAL_CHANNEL = 924062961222447126
 NEW_PLAYER_ROLE = 921113949691334706
+# TODO: In the future, add custom emojis for each DM
 APPROVAL_REACTION = "👍"

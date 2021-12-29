@@ -48,7 +48,7 @@ class NpcCommands(commands.Cog, name='NPCs'):
 
     @npc.sub_command()
     async def share(self, inter: ApplicationCommandInteraction, member: Member):
-        """ Authorize another DM to this NPC"""
+        """ Authorize this NPC to other DM Roles"""
         pass
 
 

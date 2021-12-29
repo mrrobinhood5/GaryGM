@@ -15,6 +15,7 @@ class SetupCharacter(commands.Cog, name='Setup Character'):
         """ Commands dealing with player characters"""
         pass
 
+    # TODO: Add a check for a limit on characters? We havent decided yet I guess
     @character.sub_command()
     async def add(
             self,
@@ -49,7 +50,9 @@ class SetupCharacter(commands.Cog, name='Setup Character'):
 
         me = Player(inter, d)
         me.save()
+        # sends confirmation to player
         await inter.send(embeds=[me.request_approval()], ephemeral=True)
+        # sends approval request to APPROVAL_CHANNEL
         await inter.guild.get_channel(APPROVAL_CHANNEL).send(embeds=[me.request_approval()])
 
     @character.sub_command()
@@ -75,12 +78,15 @@ class SetupCharacter(commands.Cog, name='Setup Character'):
             approval = Approval(self.bot.db, msg, payload)
 
             role: Role = self.bot.guilds[0].get_role(int(approval.role_id))
+            # TODO: maybe save this to the bot instance.
             new_player_role: Role = self.bot.guilds[0].get_role(NEW_PLAYER_ROLE)
             approvee: Member = self.bot.guilds[0].get_member(int(approval.player_id))
 
             # Changes the embed to approved
             await msg.edit(embeds=approval.get_embed())
+            # Adds the entry point role to the Player
             await approvee.add_roles(role)
+            # Removes the New Player Role if any, otherwise it doesnt do nothing
             await approvee.remove_roles(new_player_role)
 
 

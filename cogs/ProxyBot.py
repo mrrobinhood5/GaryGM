@@ -10,6 +10,7 @@ class ProxyBot(commands.Cog, name='ProxyBot'):
     @commands.Cog.listener()
     async def on_message(self, msg: Message):
         """ listener for npc bots """
+        # TODO: Clean this shit up, maybe make a proxy-guy object
         pid = str(msg.author.id)
         # determine if its a potential prefix
         if ':' not in msg.content:

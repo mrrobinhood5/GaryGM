@@ -63,7 +63,7 @@ class Agreement(disnake.ui.View):
             content="**We're sorry you feel this way. Maybe we can talk it out in <#920857756649545770> :)**",
             view=None)
 
-
+# TODO: Move the help pages to DB and make a way to add/edit
 def create_help_pages():
     # get them from the database
     embeds = []

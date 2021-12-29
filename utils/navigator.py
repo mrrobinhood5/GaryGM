@@ -6,14 +6,14 @@ from disnake.ext import commands
 # of this class is called when the user changes their choice
 class Dropdown(disnake.ui.Select):
     def __init__(self):
-
+        # TODO: grab these from the DB instead of hard code
         # Set the options that will be presented inside the dropdown
         options = [
             disnake.SelectOption(
-                label="Sea Port", description="The Sea Port is where the boats dock", emoji="🟥",
+                label="Docks District", description="If your character is traveling into the city by sea.", emoji="🟥",
                 value='922262282539507752'),
             disnake.SelectOption(
-                label="North Market", description="Buy things and or another", emoji="🟩",
+                label="North Market Gate", description="Buy things and or another", emoji="🟩",
                 value='922262406317633536'),
             disnake.SelectOption(
                 label="Slums", description="Make sure you use protection", emoji="🟦",

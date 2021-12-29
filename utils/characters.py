@@ -2,8 +2,9 @@ import disnake
 from disnake import Embed, ApplicationCommandInteraction
 from disnake.ext.commands import option_enum
 
-
+# TODO: Add entry points to the Database
 EntryPoint = option_enum({"Docks": "922262282539507752", "Gate": "922262406317633536", "Slums": "922262527587532830"})
+# TODO: add this option to the bot or the DB
 DEFAULT_PC_AVATAR = 'https://i.imgur.com/v47ed3Y.jpg'
 
 class Player:

@@ -13,7 +13,7 @@ class NavigatorCommands(commands.Cog, name='Navigator Commands'):
             self,
             inter: ApplicationCommandInteraction):
         """Use this to Fast Travel along the city"""
-
+        # TODO: Add a check to see what keys the player has, and enter them.
         # Create the view containing our dropdown
         view = DropdownView()
 
