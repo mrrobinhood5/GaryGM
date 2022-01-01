@@ -1,6 +1,8 @@
 from disnake.ext import commands
 from disnake import ApplicationCommandInteraction, Member
 from utils.help import Menu, create_help_pages, Agreement
+from main import bot as bt
+
 
 
 class Help(commands.Cog, name='Help'):
@@ -13,7 +15,7 @@ class Help(commands.Cog, name='Help'):
         """Used to re-send welcome messages to members that didnt Agree to the Terms"""
 
         # Creates the embeds as a list.
-        embeds = create_help_pages()
+        embeds = create_help_pages(ctx)
 
         # Sets the footer of the first embed.
         embeds[0].set_footer(text=f"Kerna - Path of the Wicked | Page 1 of {len(embeds)}")

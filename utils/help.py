@@ -64,50 +64,19 @@ class Agreement(disnake.ui.View):
             content="**We're sorry you feel this way. Maybe we can talk it out in <#920857756649545770> :)**",
             view=None)
 
+
 # TODO: Move the help pages to DB and make a way to add/edit
 def create_help_pages(inter):
-    # get them from the database
     embeds = []
-    db = [{"title": "Server Rules",
-           "description": "Rules for everyone on the server.",
-           "thumbnail": "https://i.imgur.com/0102Ab8.png",
-           "footer": "Kerna - Path of the Wicked",
-           "fields": [("Be Respectful", "Treat other members how you wish to be treated. The one golder rule."),
-                      ("Griefing and Harassment",
-                       "Griefing is the act of chronically causing consternation to other members and distrubing their immersion.\nBoth apply in and out of character"),
-                      ("Racism, Bigotry, Discrimination",
-                       "No discriminating against real world races, genders, sexuality, conditions, or social status. This will be an instant ban."),
-                      ("Enjoy Yourself!", "The purpose of this server is to play D&D with others and have fun.")]},
-          {"title": "Character Rules",
-           "description": "Rules specific to the game",
-           "thumbnail": "https://i.imgur.com/0102Ab8.png",
-           "fields": [("Sources", "We only use official 5e sources. No Homebrew or Playtest materials"),
-                      ("Sheets", "We use Avrae which takes DnD Beyond, GSheetv2, or Dicecloud"),
-                      ("Starting a Character",
-                       "Your first character will be level 3 or below, unlock a second character at level 5 (can start at level 5), but your backstory should match your level.\nUse point-buy or standard array for your stats, and fixed HP progression"),
-                      ("RAW", "Unless otherwise stated by a DM on quest, we follow RAW as close as possible"),
-                      ("DM", "As in a real table, DM has final say so on adjudication.")]},
-          {"title": "RolePlay Rules",
-           "description": "Rules regarding role play in the server.",
-           "thumbnail": "https://i.imgur.com/0102Ab8.png",
-           "fields": [("eRP", "Erotic Role Play is not allowed in this server. You must take these conversations outside of the server"),
-                      ("Gore / Violence", "Graphic Gore / Violence is not allowed unless all parties agree to the scene beforehand, and everyone opts in for it to be roleplayed"),
-                      ("No means No", "If another player says **NO** in character, it means **DONT DO IT** out of character. You will be banned for a violation of this.")]},
-          {"title": "Quickstart",
-           "description": "A quick step by step",
-           "thumbnail": "https://i.imgur.com/0102Ab8.png",
-           "fields": [("First things Fist", "Stop by and say hello to everyone in <#920857756649545770>"),
-                      ("Load and Configure",
-                       "Channel <#922721043917987930> is used to load and configure a character from D&D Beyond, GSheet, or Dicecloud. `!initial` command will have a step by step"),
-                      ("Character Setup", "Submit your backstory, character name, RP prefix and image to `/character add`"),
-                      ("Points of Entry", "Depending on your backstory, you can start RP in the Docks, North Gate, or Slums"),
-                      ("Fast Travel",
-                       "You can only see channel categories where you have characters. You can always `/fast_travel` to explore different areas of the city.")]}]
+    help_pages = inter.bot.help_pages
 
-    for entry in inter.bot.help_pages:
+    for entry in help_pages:
         embed = Embed(title=entry['title'], description=entry['description'], color=Color.random())
         embed.set_thumbnail(url=entry['thumbnail'])
         for field in entry['fields']:
             embed.add_field(name=field[0], value=field[1], inline=False)
         embeds.append(embed)
     return embeds
+
+
+

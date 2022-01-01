@@ -1,52 +1,65 @@
-import disnake
-from disnake.ext import commands
+from disnake import SelectOption, MessageInteraction, Member
+from disnake.ui import Select, View, select
+from typing import List
+
 
 # Defines a custom Select containing colour options
 # that the user can choose. The callback function
 # of this class is called when the user changes their choice
-class Dropdown(disnake.ui.Select):
-    def __init__(self):
-        # TODO: grab these from the DB instead of hard code
-        # Set the options that will be presented inside the dropdown
-        options = [
-            disnake.SelectOption(
-                label="Docks District", description="If your character is traveling into the city by sea.", emoji="🟥",
-                value='922262282539507752'),
-            disnake.SelectOption(
-                label="North Market Gate", description="Buy things and or another", emoji="🟩",
-                value='922262406317633536'),
-            disnake.SelectOption(
-                label="Slums", description="Make sure you use protection", emoji="🟦",
-                value='922262527587532830'),
-        ]
+class DistrictsDropdown(Select):
+    def __init__(self, districts):
+        options = []
+        for district in districts:
+            options.append(SelectOption(label=district[0], description="", value=district[1]))
 
-        # The placeholder is what will be shown when no option is chosen
-        # The min and max values indicate we can only pick one of the three options
-        # The options parameter defines the dropdown options. We defined this above
+        super().__init__(placeholder="Choose a location", min_values=1, max_values=1, options=options)
+
+    async def callback(self, inter: MessageInteraction):
+        self.disabled = True
+        district_role = inter.guild.get_role(int(self.values[0]))
+        m = f"`{self.view.character.character}` has traveled to `{district_role.name.lstrip('d: ')}`"
+        # change the players location and save it to db
+        await self.view.character.fast_travel(district_role)
+        # the ephemeral message
+        await inter.response.edit_message(content=m, view=self.view)
+        # the tracker message
+        await inter.guild.get_channel(inter.channel_id).send(m)
+
+
+class CharactersDropdown(Select):
+    def __init__(self, characters):
+        options = []
+        for character in characters:
+            options.append(SelectOption(label=character.character, description="", value=character.character))
+
         super().__init__(
-            placeholder="Fast travel where?",
+            placeholder="Choose a character",
             min_values=1,
             max_values=1,
             options=options,
         )
 
-    async def callback(self, interaction: disnake.MessageInteraction):
-        # Use the interaction object to send a response message containing
-        # the user's favourite colour or choice. The self object refers to the
-        # Select object, and the values attribute gets a list of the user's
-        # selected options. We only want the first one.
-        district_role = interaction.guild.get_role(int(self.values[0]))
-        roles_to_remove = [int(x.value) for x in self.options if x.value != self.values[0]]
-        for r in roles_to_remove:
-            await interaction.author.remove_roles(interaction.guild.get_role(r))
-        await interaction.author.add_roles(district_role)
-        me = interaction.author.name
-        await interaction.response.edit_message(content=f'{me} has traveled to {district_role.name}')
+    async def callback(self, inter: MessageInteraction):
+        await inter.response.defer()
+        self.view.character = [x for x in self.view.characters if x.character == self.values[0]][0]
+        if inter.channel not in [x for x in self.view.character.channels]:
+            await inter.edit_original_message(content=f'`{self.values[0]}` is not in this disctrict')
+            return
+
+        self.placeholder = self.values[0]
+        self.disabled = True
+        # remove your players district from the list
+        self.view.districts = [x for x in self.view.districts if x[1] != str(self.view.character.location.id)]
+        self.view.add_item(DistrictsDropdown(self.view.districts))
+
+        await inter.edit_original_message(view=self.view)
 
 
-class DropdownView(disnake.ui.View):
-    def __init__(self):
+class FastTravelView(View):
+    def __init__(self, districts: List[tuple], PCs: List[Member]):
+        self.characters = PCs
+        self.districts = districts
         super().__init__()
 
         # Adds the dropdown to our view object.
-        self.add_item(Dropdown())
+        self.add_item(CharactersDropdown(PCs))

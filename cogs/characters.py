@@ -2,7 +2,7 @@ from disnake.ext import commands
 from disnake import ApplicationCommandInteraction, RawReactionActionEvent, PartialEmoji, Member, Message, Role
 from utils.characters import Player, EntryPoint, Approval, DEFAULT_PC_AVATAR
 from utils.help import Menu
-from config import APPROVAL_CHANNEL, APPROVAL_REACTION, NEW_PLAYER_ROLE
+from config import APPROVAL_REACTION, DENIAL_REACTION
 
 
 class SetupCharacter(commands.Cog, name='Setup Character'):
@@ -48,22 +48,19 @@ class SetupCharacter(commands.Cog, name='Setup Character'):
             'prefix': prefix
         }
 
-        me = Player(inter, d)
+        me = Player(d)
         me.save()
         # sends confirmation to player
         await inter.send(embeds=[me.request_approval()], ephemeral=True)
         # sends approval request to APPROVAL_CHANNEL
-        await inter.guild.get_channel(APPROVAL_CHANNEL).send(embeds=[me.request_approval()])
+        await inter.bot.APPROVAL_CHANNEL.send(embeds=[me.request_approval()])
 
     @character.sub_command()
     async def list(self, inter: ApplicationCommandInteraction):
         """ List all of your approved characters"""
-        f = {"player": str(inter.author.id)}
         e = []
-        characters = self.bot.db.players.find(f)
-        async for char in characters:
-            p = Player(inter, char)
-            e.append(p.embed())
+        for char in self.bot.character_cache:
+            e.append(char.embed())
         e[0].set_footer(text=f"Kerna - Path of the Wicked | Page 1 of {len(e)}")
         await inter.send(embed=e[0], view=Menu(e), ephemeral=True)
 
@@ -71,23 +68,25 @@ class SetupCharacter(commands.Cog, name='Setup Character'):
     async def on_raw_reaction_add(self, payload: RawReactionActionEvent):
         """ Listens for a thumbs up in the #approvals channel,
         adds their starting role and removes the new player role """
-        if payload.channel_id == APPROVAL_CHANNEL and payload.emoji == PartialEmoji(name=APPROVAL_REACTION):
-            # fetches ass the required instances of message, and roles
+        # match the APPROVAL
+        if payload.channel_id == self.bot.APPROVAL_CHANNEL.id and payload.emoji in [APPROVAL_REACTION, DENIAL_REACTION]:
+            # fetches the required instances of message, and roles
             msg: Message = self.bot.get_message(payload.message_id)
             # runs the approval through the DB.
-            approval = Approval(self.bot.db, msg, payload)
+            approval = Approval(msg, payload)
 
-            role: Role = self.bot.guilds[0].get_role(int(approval.role_id))
-            # TODO: maybe save this to the bot instance.
-            new_player_role: Role = self.bot.guilds[0].get_role(NEW_PLAYER_ROLE)
-            approvee: Member = self.bot.guilds[0].get_member(int(approval.player_id))
+            # role: Role = self.bot.guilds[0].get_role(int(approval.role.id))
+
+            # new_player_role: Role = self.bot.guilds[0].get_role(NEW_PLAYER_ROLE)
+            # approvee: Member = self.bot.guilds[0].get_member(int(approval.player.id))
 
             # Changes the embed to approved
+            await approval.process_character()
             await msg.edit(embeds=approval.get_embed())
             # Adds the entry point role to the Player
-            await approvee.add_roles(role)
+            # await approvee.add_roles(approval.role)
             # Removes the New Player Role if any, otherwise it doesnt do nothing
-            await approvee.remove_roles(new_player_role)
+            # await approvee.remove_roles(self.bot.NEW_PLAYER_ROLE)
 
 
 def setup(bot):

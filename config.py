@@ -1,5 +1,5 @@
 import os
-from disnake import Intents
+from disnake import Intents, PartialEmoji
 
 # discord CONSTANTS
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -21,7 +21,8 @@ cogs = os.listdir("./cogs")
 cogs.remove("__pycache__") if "__pycache__" in cogs else 0
 
 # GAME CONSTANTS
-APPROVAL_CHANNEL = 924062961222447126
-NEW_PLAYER_ROLE = 921113949691334706
+
+
 # TODO: In the future, add custom emojis for each DM
-APPROVAL_REACTION = "👍"
+APPROVAL_REACTION = PartialEmoji(name="👍")
+DENIAL_REACTION = PartialEmoji(name="👎")

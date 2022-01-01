@@ -11,12 +11,13 @@ class ProxyBot(commands.Cog, name='ProxyBot'):
     async def on_message(self, msg: Message):
         """ listener for npc bots """
         # TODO: Clean this shit up, maybe make a proxy-guy object
+        # TODO: make replies work as intended
         pid = str(msg.author.id)
         # determine if its a potential prefix
         if ':' not in msg.content:
             return
         # then check if the message sender has any prefixes saved
-        if pid in self.bot.pc_prefixes.keys():
+        if pid in self.bot.character_cache.keys():
             # then check if the prefix is valid
             if msg.content[:msg.content.index(':')] in self.bot.pc_prefixes[pid].keys():
                 # if it's on the list, start checks to see if you are in the location of the NPC you are trying to use
