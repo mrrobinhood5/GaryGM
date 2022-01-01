@@ -2,6 +2,7 @@ from disnake.ext.commands import option_enum
 from disnake.ext import commands, tasks
 from utils.characters import Player
 
+
 class DatabaseActions(commands.Cog, name='Database Cache'):
 
     def __init__(self, bot):
@@ -12,10 +13,11 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
         self.npc_cache.start()
         self.config_variables.start()
 
-    @tasks.loop(hours= 12)
+    @tasks.loop(hours=12)
     async def config_variables(self):
         self.bot.APPROVAL_CHANNEL = self.bot.guilds[0].get_channel(924062961222447126)
         self.bot.NEW_PLAYER_ROLE = self.bot.guilds[0].get_channel(921113949691334706)
+        self.bot.DEFAULT_PC_AVATAR = 'https://i.imgur.com/v47ed3Y.jpg'
 
     @tasks.loop(seconds=60.0)
     async def character_cache(self):
@@ -29,11 +31,20 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
         avatar is url
         location_id is role.id as str
         """
-        # TODO: send the cache back to the DB, no, anything writing to the DB will be automatic
         # send updates to DB first, then grab them again
         characters = []
+        valid_prefixes = []
+        prefixes_cache = {}
         async for character in self.db.players.find({"approved": True}):
             characters.append(Player(character))
+        for character in characters:
+            valid_prefixes.append(character.prefix)
+            if prefixes_cache.get(character.player.id):
+                prefixes_cache[character.player.id].update({character.prefix: character})
+            else:
+                prefixes_cache.update({character.player.id: {character.prefix: character}})
+        self.bot.valid_prefixes = valid_prefixes
+        self.bot.prefixes_cache = prefixes_cache
         self.bot.character_cache = characters
 
     @tasks.loop(seconds=600.0)
@@ -55,7 +66,7 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
             npc_cache.append({i['prefix']})
         self.bot.npc_cache = npc_cache
 
-    @config_variables.before_loop()
+    @config_variables.before_loop
     @npc_cache.before_loop
     @help_pages_cache.before_loop
     @character_cache.before_loop
@@ -64,7 +75,6 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
         print('All task is waiting for Bot to go online...')
         await self.bot.wait_until_ready()
         print('DB Caches is now running...')
-
 
     def cog_unload(self):
         self.character_cache.cancel()

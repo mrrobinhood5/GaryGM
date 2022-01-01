@@ -1,26 +1,28 @@
-from disnake import Embed, Role, Color
+from disnake import Embed, Role, Color, Member
 from disnake.ext.commands import option_enum
 from main import bot
 from config import APPROVAL_REACTION
+from typing import List
 
 # TODO: Add entry points to the Database
 EntryPoint = option_enum({"Docks": "922262282539507752", "Gate": "922262406317633536", "Slums": "922262527587532830"})
 # TODO: add this option to the bot or the DB
 DEFAULT_PC_AVATAR = 'https://i.imgur.com/v47ed3Y.jpg'
 
+
 class Player:
 
-    def __init__(self, d: dict = {}):
+    def __init__(self, d: dict):
         # load stuff from dict, this goes to the db
         for k, v in d.items():
             self.__setattr__(k, v)
 
         # temp data for the embeds
         # self.db = bot.db
-        self.player = bot.guilds[0].get_member(int(self.player))
+        self.player: Member = bot.guilds[0].get_member(int(self.player))
         # location data
-        self.keys = [bot.guilds[0].get_role(int(key)) for key in self.keys]
-        self.location = bot.guilds[0].get_role(int(self.location))
+        self.keys: List[Role] = [bot.guilds[0].get_role(int(key)) for key in self.keys]
+        self.location: Role = bot.guilds[0].get_role(int(self.location))
 
     async def fast_travel(self, role: Role):
         """ change the player to a new location from fast travel """
@@ -61,8 +63,8 @@ class Player:
             "prefix": self.prefix,
             "approved": self.approved,
             "keys": [str(x.id) for x in self.keys],
-            "location": str(self.location.id)
-            }
+            "location": str(self.location.id) # is a role
+        }
         return r
 
     def request_approval(self):
@@ -70,11 +72,13 @@ class Player:
         e = Embed(
             title="Player Approval Started",
             description=f"Submitted by **{self.player_name}**",
-            color=disnake.Color.red())
+            color=Color.blue())
         e.add_field(name=self.character, value=self.backstory, inline=False),
         e.add_field(name="Start Point", value=self.location.name)
         e.add_field(name="Proxy Prefix", value=self.prefix)
-        e.add_field(name="DM Actions", value="DM will review your backstory and your `!vsheet` that should be posted in <#924069254637158441>", inline=False)
+        e.add_field(name="DM Actions",
+                    value="DM will review your backstory and your `!vsheet` that should be posted in <#924069254637158441>",
+                    inline=False)
         e.set_thumbnail(url=self.avatar)
         e.set_footer(text=f'{self.player.id}|{self.location.id}')
         return e
@@ -84,7 +88,7 @@ class Player:
         e = Embed(
             title=self.character,
             description=self.backstory,
-            color=disnake.Color.yellow())
+            color=Color.yellow())
         e.add_field(name="Location", value=self.location.name)
         e.add_field(name="Keys", value=self.keys)
         e.add_field(name="Proxy Prefix", value=self.prefix)
@@ -98,13 +102,12 @@ class Approval:
     def __init__(self, msg, payload):
         self.approver = payload.member.name
         self.embed = msg.embeds[0]
-        self.embed.description += f'\nApproved by **{self.approver}**'
         self.embed.title = self.embed.title.replace("Started", "Complete")
         self.player = msg.guild.get_member(int(self.embed.footer.text.split("|")[0]))
         self.role = msg.guild.get_role(int(self.embed.footer.text.split("|")[1]))
         self.name = self.embed.fields[0].name
         self.approval = True if payload.emoji == APPROVAL_REACTION else False
-        # self.process_character()
+        self.embed.description += f'\n{"Approved" if self.approval else "Disapproved"} by **{self.approver}**'
 
     @property
     def f(self):
@@ -124,6 +127,3 @@ class Approval:
 
     def get_embed(self):
         return [self.embed]
-
-
-
