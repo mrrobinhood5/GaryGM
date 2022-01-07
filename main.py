@@ -12,6 +12,9 @@ bot = commands.Bot(command_prefix=BOT_PREFIX,
 db = motor.motor_asyncio.AsyncIOMotorClient(
     f"mongodb+srv://{DB_USER}:{DB_PASSWORD}@{DB_URL}")
 bot.__setattr__("db", db.Kerna)
+bot.__setattr__("players", [])
+bot.__setattr__("pending_approvals", [])
+bot.__setattr__("character_delete_queue", [])
 
 # custom instance of bot
 # bot = KernaBot(db, BOT_PREFIX, INTENTS, TEST_GUILDS)

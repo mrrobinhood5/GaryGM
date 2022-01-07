@@ -1,5 +1,9 @@
 import os
+
+import disnake
 from disnake import Intents, PartialEmoji
+from disnake.ext.commands import option_enum
+
 
 # discord CONSTANTS
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -26,3 +30,6 @@ cogs.remove("__pycache__") if "__pycache__" in cogs else 0
 # TODO: In the future, add custom emojis for each DM
 APPROVAL_REACTION = PartialEmoji(name="👍")
 DENIAL_REACTION = PartialEmoji(name="👎")
+DEFAULT_PC_AVATAR = 'https://i.imgur.com/v47ed3Y.jpg'
+ENTRY_POINTS = option_enum({"Docks": "922262282539507752", "Gate": "922262406317633536", "Slums": "922262527587532830"})
+CHARACTER_ATTRIBUTES = option_enum({"Name": "name", "Backstory": "backstory", "Prefix": "prefix", "Avatar": "avatar"})

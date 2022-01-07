@@ -1,6 +1,7 @@
 from disnake.ext import commands
-from disnake import ApplicationCommandInteraction, CategoryChannel, Embed
+from disnake import ApplicationCommandInteraction, CategoryChannel, Embed, File, Asset, Attachment, Member
 from typing import List
+import aiohttp
 
 
 class Search(commands.Cog, name='ChannelSearch'):

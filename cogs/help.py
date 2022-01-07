@@ -1,8 +1,7 @@
 from disnake.ext import commands
 from disnake import ApplicationCommandInteraction, Member
 from utils.help import Menu, create_help_pages, Agreement
-from main import bot as bt
-
+from utils.kerna_classes import Player
 
 
 class Help(commands.Cog, name='Help'):
@@ -12,7 +11,7 @@ class Help(commands.Cog, name='Help'):
 
     @commands.command()
     async def omj(self, ctx, member: Member):
-        """Used to re-send welcome messages to members that didnt Agree to the Terms"""
+        """Used to re-send welcome messages to members that didn't Agree to the Terms"""
 
         # Creates the embeds as a list.
         embeds = create_help_pages(ctx)
@@ -29,6 +28,7 @@ class Help(commands.Cog, name='Help'):
 
     @commands.Cog.listener()
     async def on_member_join(self, member: Member):
+        self.bot.players.append(Player(member))
         await self.omj(member, member)
 
     @commands.slash_command()
@@ -46,4 +46,3 @@ class Help(commands.Cog, name='Help'):
 
 def setup(bot):
     bot.add_cog(Help(bot))
-
