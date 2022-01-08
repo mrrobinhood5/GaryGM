@@ -41,25 +41,30 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
         """
         # Load the players first, and its characters
         async for player in self.db.players.find():
+            # this should be the only member
             m = self.bot.guilds[0].get_member(int(player['member']))
+            p = Player(_id=player["_id"], member=m)
             c = []
-            async for character in self.db.characters.find({"player": str(m.id)}):
-                c.append(Character(
-                    _id=character["_id"],
-                    player=m,
-                    name=character['name'],
-                    backstory=character['backstory'],
-                    avatar=character['avatar'],
-                    prefix=character['prefix'],
-                    location=self.bot.guilds[0].get_role(int(character['location'])),
-                    variants=character['variants'],
-                    familiars=character['familiars'], # load these objects
-                    approved=character['approved'], # load these objects
-                    alive=character['alive'],
-                    keys=character['keys'], # this needs to be expanded to roles
-                    rpxp=character['rpxp']
-                ))
-            self.bot.players.append(Player(_id=player["_id"], member=m, characters=c))
+            for character in player['characters']:
+                char = await self.db.characters.find_one({"_id": character})
+                if char:
+                    c.append(Character(
+                        _id=char["_id"],
+                        player=p,
+                        name=char['name'],
+                        backstory=char['backstory'],
+                        avatar=char['avatar'],
+                        prefix=char['prefix'],
+                        location=self.bot.guilds[0].get_role(int(char['location'])),
+                        variants=char['variants'],
+                        familiars=char['familiars'], # load these objects
+                        approved=char['approved'], # load these objects
+                        alive=char['alive'],
+                        keys=char['keys'], # this needs to be expanded to roles
+                        rpxp=char['rpxp']
+                    ))
+            p.characters = c
+            self.bot.players.append(p)
 
     @tasks.loop(seconds=600.0)
     async def help_pages_cache(self):

@@ -127,7 +127,7 @@ class SetupCharacter(commands.Cog, name='Setup Character'):
         await view.wait()
 
         # makes the changes, moves character to delete queue and removes that location
-        self.bot.character_delete_queue.append(me.characters.pop(me.characters.index(view.character)))
+        self.bot.character_delete_queue.append(me.delete_character(self.view.character))
         if view.character.location not in [character.location for character in me.characters]:
             await me.member.remove_roles(view.character.location)
         await inter.edit_original_message(content=f'`{view.character.name}` has been deleted!', view=None)
@@ -139,11 +139,14 @@ class SetupCharacter(commands.Cog, name='Setup Character'):
         # checks to make sure that only thumbs up or down in the correct channel
         if payload.channel_id == self.bot.APPROVAL_CHANNEL.id and payload.emoji in [APPROVAL_REACTION, DENIAL_REACTION]:
             msg: Message = self.bot.get_message(payload.message_id)
-            # the approvee is the DM who approved
+
+            # the approvee is the character who submitted for approval
             approvee = msg.embeds[0].footer.text.split("|")[0]
+
             # pulls the approval from the queue
             approval = [approval for approval in self.bot.pending_approvals if approval.character.name == approvee][0]
             approval.process_approval(payload)
+
             # remove it from the queue
             self.bot.pending_approvals.pop(self.bot.pending_approvals.index(approval))
             if approval.approved:
@@ -151,6 +154,8 @@ class SetupCharacter(commands.Cog, name='Setup Character'):
                 await approval.character.player.remove_roles(self.bot.NEW_PLAYER_ROLE)
             else:
                 self.bot.character_delete_queue.append(approval.character)
+
+
             await msg.edit(embeds=approval.embed)
 
 

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from disnake import Embed, Member, Role, TextChannel, Color, Enum, PartialEmoji, RawReactionActionEvent
+from disnake import Embed, Member, Role, TextChannel, Color, Enum, RawReactionActionEvent
 from typing import List, Union
 from bson.objectid import ObjectId
 from utils.npc import Npc
@@ -31,7 +31,7 @@ class Character:
         """ Transform the character object to dict for DB entry"""
         d = {
             "_id": self._id,
-            "player": str(self.player.id),
+            "player": self.player.id,
             "name": self.name,
             "backstory": self.backstory,
             "avatar": self.avatar,
@@ -46,14 +46,18 @@ class Character:
         }
         return d
 
-    async def fast_travel(self, role: Role) -> None:
+    async def fast_travel(self, role: Role) -> str:
         """ Complete a fast-travel for this character """
-        # await self.player.add_roles(role)
+        # add the role you went to
+        await self.player.add_roles(role)
+
+        # remove the location if no one else has it
+        if not [character for character in self.player.characters if character.location == role]:
         # if not [x for x in bot.character_cache if x.player.id == self.player.id and x.location == self.location]:
-        #     await self.player.remove_roles(self.location)
-        # self.location = role
+            await self.player.remove_roles(self.location)
+        self.location = role
         # self.save()  # need a better way of saving the character to DB
-        pass
+        return f"`{self.name}` has traveled to `{role.name.lstrip('d: ')}`"
 
     def embed(self) -> Embed:
         """ Returns an embed representation of the character """
@@ -86,9 +90,12 @@ class Character:
     @property
     def channels(self) -> List[TextChannel]:
         """ returns a list of channels that the character is able to see """
-        # return [x.channels for x in bot.guilds[0].categories if x.name.lower() == self.district_name][0]
-        pass
+        # I dont think we can pull up the channels from here
+        return [category.channels for category in self.location.guild.categories if category.name.lower() == self.location.name.lstrip("d: ").lower()][0]
 
+    @property
+    def id(self):
+        return self._id
 
 class CharacterExtension:
     character: Character
@@ -150,9 +157,17 @@ class Player:
         """ Add a Character object to a Player instance """
         self.characters.append(character)
 
-    def delete_character(self):
+    def delete_character(self, character: Character):
         """ Remove a Character object from a Player instance """
-        pass
+        return self.characters.pop(self.characters.index(character))
+
+    @property
+    def districts(self) -> List[str]:
+        """ Returns a list of district names """
+        d = []
+        for character in self.characters:
+            d.append(character.location.name.lstrip("d: "))
+        return d
 
     @property
     def character_list(self) -> List[Embed]:
@@ -175,9 +190,13 @@ class Player:
         """ sends the dict representation for the db save"""
         d = {
             "member": str(self.member.id),
-            "characters": [{"player": str(character.player.id), "name": character.name} for character in self.characters]
+            "characters": [character.id for character in self.characters]
         }
         return d
+
+    @property
+    def id(self):
+        return self._id
 
 # DM
 class DungeonMasterType(Enum):
@@ -248,6 +267,7 @@ class Approval:
             self.embed_to_approve.description += f"\nApproved by **{payload.member.name}**"
             self.embed_to_approve.colour = Color.green()
             self.character.approved = True
+            self.approved = True
         else:
             self.embed_to_approve.title = self.embed_to_approve.title.replace("Started", "Complete")
             self.embed_to_approve.description += f"\nDenied by **{payload.member.name}**"
