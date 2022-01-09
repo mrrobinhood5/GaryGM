@@ -9,7 +9,7 @@ from config import APPROVAL_REACTION, DENIAL_REACTION
 
 @dataclass
 class Character:
-    player: Union['Player', Member]
+    player: 'Player'
     name: str
     backstory: str
     avatar: str
@@ -46,18 +46,21 @@ class Character:
         }
         return d
 
-    async def fast_travel(self, role: Role) -> str:
+    async def fast_travel(self, destination: Role) -> str:
         """ Complete a fast-travel for this character """
-        # add the role you went to
-        await self.player.add_roles(role)
+        # change the current characters location to its destination
+        original_location = self.location
+        self.location = destination
 
         # remove the location if no one else has it
-        if not [character for character in self.player.characters if character.location == role]:
-        # if not [x for x in bot.character_cache if x.player.id == self.player.id and x.location == self.location]:
-            await self.player.remove_roles(self.location)
-        self.location = role
+        if original_location not in [character.location for character in self.player.characters if character.name != self.name]:
+            await self.player.member.remove_roles(original_location)
+
+        # add the role you went to
+        await self.player.member.add_roles(destination)
+
         # self.save()  # need a better way of saving the character to DB
-        return f"`{self.name}` has traveled to `{role.name.lstrip('d: ')}`"
+        return f"`{self.name}` has traveled to `{destination.name.lstrip('d: ')}`"
 
     def embed(self) -> Embed:
         """ Returns an embed representation of the character """
@@ -65,10 +68,10 @@ class Character:
         e.add_field(name="Proxy Prefix", value=self.prefix)
 
         e.add_field(name="Location", value=self.location.name.lstrip('d: '), inline=False)
-        e.add_field(name="Keys", value=self.keys)
+        e.add_field(name="Keys", value=self.keys or None, inline=True)
 
         e.add_field(name="Familiars", value=self.familiars or None, inline=False)
-        e.add_field(name="Variants", value=self.variants or None)
+        e.add_field(name="Variants", value=self.variants or None, inline=True)
         e.set_thumbnail(url=self.avatar)
         return e
 
@@ -198,6 +201,10 @@ class Player:
     def id(self):
         return self._id
 
+    @property
+    def character_count(self):
+        return len(self.characters)
+
 # DM
 class DungeonMasterType(Enum):
     NPC_DM = 1
@@ -228,7 +235,7 @@ class Approval:
     def __post_init__(self) -> None:
         """ Build the Embed to request approval character."""
         e = Embed(title="Approval Started",
-                  description=f"Submitted by **{self.character.player.name}**", color=Color.blue())
+                  description=f"Submitted by **{self.character.player.member.name}**", color=Color.blue())
         e.add_field(name=self.character.name, value=self.character.backstory, inline=False),
         e.add_field(name="Start Point", value=self.character.location.name)
         e.add_field(name="Proxy Prefix", value=self.character.prefix)
@@ -238,7 +245,7 @@ class Approval:
                     inline=False)
         e.set_thumbnail(url=self.character.avatar)
         # bot.pending_approvals.append(self)
-        e.set_footer(text=f'{self.character.name}|{self.character.player.id}')
+        e.set_footer(text=f'{self.character.name}|{self.character.player.member.id}|Character Count: {self.character.player.character_count}')
         self.embed_to_approve = e
         # return self.embed_to_approve
 

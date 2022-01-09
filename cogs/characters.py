@@ -18,6 +18,11 @@ class SetupCharacter(commands.Cog, name='Setup Character'):
         characters = [character for character in me.characters if character.approved]
         return me, characters
 
+    def decode_footer(self, msg: Message) -> (str, Member):
+        name = msg.embeds[0].footer.text.split("|")[0]
+        approvee = msg.guild.get_member(int(msg.embeds[0].footer.text.split("|")[1]))
+        return name, approvee
+
     @commands.slash_command()
     async def character(self, inter: ApplicationCommandInteraction):
         """ Commands dealing with player characters"""
@@ -25,7 +30,9 @@ class SetupCharacter(commands.Cog, name='Setup Character'):
         self.m_check = lambda m: inter.author == m.author
         pass
 
-    # TODO: Add a check for a limit on characters? We haven't decided yet I guess
+    # TODO: Add a check for a limit on characters? We haven't decided yet I guess,
+    #  for now i just added a character count on the approval
+
     @character.sub_command()
     async def add(
             self,
@@ -47,18 +54,18 @@ class SetupCharacter(commands.Cog, name='Setup Character'):
         avatar: URL to an image you want to use as the player avatar
         """
         # Get the player object from the cache
-        player = [player for player in self.bot.players if player.member.id == inter.author.id][0]
+        me = [player for player in self.bot.players if player.member.id == inter.author.id][0]
         entry_point = inter.guild.get_role(int(entry_point))
 
         # Make a character object and add it to the player object
-        new_char = Character(player=inter.author,
+        new_char = Character(player=me,
                              name=name.title(),
                              backstory=backstory,
                              avatar=avatar,
                              prefix=prefix,
                              location=entry_point,
                              )
-        player.add_character(new_char)
+        me.add_character(new_char)
 
         # Create a new approval and save it to the queue
         new_approval = Approval(character=new_char)
@@ -127,7 +134,7 @@ class SetupCharacter(commands.Cog, name='Setup Character'):
         await view.wait()
 
         # makes the changes, moves character to delete queue and removes that location
-        self.bot.character_delete_queue.append(me.delete_character(self.view.character))
+        self.bot.character_delete_queue.append(me.delete_character(view.character))
         if view.character.location not in [character.location for character in me.characters]:
             await me.member.remove_roles(view.character.location)
         await inter.edit_original_message(content=f'`{view.character.name}` has been deleted!', view=None)
@@ -141,17 +148,17 @@ class SetupCharacter(commands.Cog, name='Setup Character'):
             msg: Message = self.bot.get_message(payload.message_id)
 
             # the approvee is the character who submitted for approval
-            approvee = msg.embeds[0].footer.text.split("|")[0]
+            name, approvee = self.decode_footer(msg)
 
             # pulls the approval from the queue
-            approval = [approval for approval in self.bot.pending_approvals if approval.character.name == approvee][0]
+            approval = [approval for approval in self.bot.pending_approvals if approval.character.player.member == approvee][0]
             approval.process_approval(payload)
 
             # remove it from the queue
             self.bot.pending_approvals.pop(self.bot.pending_approvals.index(approval))
             if approval.approved:
-                await approval.character.player.add_roles(approval.character.location)
-                await approval.character.player.remove_roles(self.bot.NEW_PLAYER_ROLE)
+                await approval.character.player.member.add_roles(approval.character.location)
+                await approval.character.player.member.remove_roles(self.bot.NEW_PLAYER_ROLE)
             else:
                 self.bot.character_delete_queue.append(approval.character)
 

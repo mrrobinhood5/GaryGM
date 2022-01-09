@@ -19,17 +19,17 @@ class DistrictsDropdown(Select):
         self.disabled = True
 
         # get the role object of where your are going to
-        district_role = inter.guild.get_role(int(self.values[0]))
+        destination = inter.guild.get_role(int(self.values[0]))
 
         # msg = f"`{self.view.character.name}` has traveled to `{district_role.name.lstrip('d: ')}`"
         # change the players location and save it to db
-        msg = await self.view.character.fast_travel(district_role)
+        msg = await self.view.character.fast_travel(destination)
         # the ephemeral message
         await inter.response.edit_message(content=msg, view=self.view)
         # the tracker message
         await inter.guild.get_channel(inter.channel_id).send(msg)
 
-        await self.view.stop()
+        self.view.stop()
 
 
 class CharactersDropdown(Select):
@@ -58,11 +58,11 @@ class CharactersDropdown(Select):
             await inter.edit_original_message(content=f'`{self.values[0]}` is not in this disctrict', view=None)
             self.view.stop()
             return
-        else:
-            await inter.edit_original_message(content="Character IS supposed to be here")
+        # else:
+        #     await inter.edit_original_message(content="Character IS supposed to be here")
 
         # remove your players district from the list
-        # self.view.districts = [x for x in self.view.districts if x[1] != str(self.view.character.location.id)]
+        self.view.districts = [x for x in self.view.districts if x.name != self.view.character.location.name]
 
         self.view.add_item(DistrictsDropdown(self.view.districts))
 

@@ -32,7 +32,6 @@ class NavigatorCommands(commands.Cog, name='Navigator Commands'):
         districts = [r for r in inter.guild.roles if r.name.startswith("d:")]
 
         # Create the view containing our dropdown
-        # view = FastTravelView(me.districts, characters)
         view = FastTravelView(districts, characters)
 
         # Sending a message containing our view
