@@ -60,7 +60,7 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
                         familiars=char['familiars'], # load these objects
                         approved=char['approved'], # load these objects
                         alive=char['alive'],
-                        keys=char['keys'], # this needs to be expanded to roles
+                        keys=[self.bot.guilds[0].get_role(int(key)) for key in char['keys']],
                         rpxp=char['rpxp']
                     ))
             p.characters = c

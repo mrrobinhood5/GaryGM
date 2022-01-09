@@ -7,7 +7,7 @@ from config import ENTRY_POINTS, APPROVAL_REACTION, DENIAL_REACTION, DEFAULT_PC_
 from typing import List
 
 
-
+# TODO add variants and familiars
 class CharacterCommands(commands.Cog, name='Character Commands'):
 
     def __init__(self, bot):

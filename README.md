@@ -25,3 +25,9 @@ Allows you to move a character from one district to another. You can only move a
 
 # ProxyGuy
 On character creation, you can make your prefix for your character. A prefix will always be before a `:`
+
+# /DM
+This group contains commands that only DungeonMasters can use.
+
+## /DM give_keys @Player
+Gives a Key to a Player. They can then fast travel to locked districts

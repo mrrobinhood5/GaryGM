@@ -64,6 +64,10 @@ class CharactersDropdown(Select):
         # remove your players district from the list
         self.view.districts = [x for x in self.view.districts if x.name != self.view.character.location.name]
 
+        # add your keys into the districts
+        for key in self.view.character.keys:
+            self.view.districts.append(key)
+
         self.view.add_item(DistrictsDropdown(self.view.districts))
 
         await inter.edit_original_message(view=self.view)

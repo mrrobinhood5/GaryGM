@@ -100,6 +100,9 @@ class Character:
     def id(self):
         return self._id
 
+    def add_key(self, key: Role):
+        self.keys.append(key)
+
 class CharacterExtension:
     character: Character
     name: str
