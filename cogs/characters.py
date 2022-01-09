@@ -8,7 +8,7 @@ from typing import List
 
 
 
-class SetupCharacter(commands.Cog, name='Setup Character'):
+class CharacterCommands(commands.Cog, name='Character Commands'):
 
     def __init__(self, bot):
         self.bot = bot
@@ -147,24 +147,29 @@ class SetupCharacter(commands.Cog, name='Setup Character'):
         if payload.channel_id == self.bot.APPROVAL_CHANNEL.id and payload.emoji in [APPROVAL_REACTION, DENIAL_REACTION]:
             msg: Message = self.bot.get_message(payload.message_id)
 
-            # the approvee is the character who submitted for approval
+            # the approvee is the Member who submitted for approval
             name, approvee = self.decode_footer(msg)
+            me, _ = self.get_player_characters(approvee)
 
             # pulls the approval from the queue
-            approval = [approval for approval in self.bot.pending_approvals if approval.character.player.member == approvee][0]
+            approval: Approval = [approval for approval in self.bot.pending_approvals if approval.character.player.member == approvee][0]
+
             approval.process_approval(payload)
 
             # remove it from the queue
             self.bot.pending_approvals.pop(self.bot.pending_approvals.index(approval))
+
             if approval.approved:
                 await approval.character.player.member.add_roles(approval.character.location)
                 await approval.character.player.member.remove_roles(self.bot.NEW_PLAYER_ROLE)
             else:
                 self.bot.character_delete_queue.append(approval.character)
-
-
+                for index, character in enumerate(me.characters):
+                    if character.id == approval.character.id:
+                        me.characters.pop(index)
+                        break
             await msg.edit(embeds=approval.embed)
 
 
 def setup(bot):
-    bot.add_cog(SetupCharacter(bot))
+    bot.add_cog(CharacterCommands(bot))

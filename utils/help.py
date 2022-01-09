@@ -53,6 +53,7 @@ class Agreement(disnake.ui.View):
     async def agree(self, button: disnake.ui.Button, inter: disnake.MessageInteraction):
         me = self.guild.get_member(inter.author.id)
         # TODO: Add New Player Role to bot
+        # BOT is not accessible from a util
         role = self.guild.get_role(921113949691334706)
         await me.add_roles(role)
         await inter.response.edit_message(
@@ -65,7 +66,7 @@ class Agreement(disnake.ui.View):
             view=None)
 
 
-# TODO: Move the help pages to DB and make a way to add/edit
+# TODO: Add a way to create new help pages
 def create_help_pages(inter):
     embeds = []
     help_pages = inter.bot.help_pages

@@ -166,7 +166,7 @@ class Player:
 
     @property
     def districts(self) -> List[str]:
-        """ Returns a list of district names """
+        """ Returns a list of district names that your characters are in """
         d = []
         for character in self.characters:
             d.append(character.location.name.lstrip("d: "))
@@ -175,12 +175,9 @@ class Player:
     @property
     def character_list(self) -> List[Embed]:
         """ Lists all your characters """
+        # how is this different player.characters?
         character_list = []
         return character_list
-        pass
-
-    def update_character(self):
-        """ I don't know how to implement updates yet """
         pass
 
     @property
@@ -204,6 +201,10 @@ class Player:
     @property
     def character_count(self):
         return len(self.characters)
+
+    @property
+    def prefixes(self):
+        return [character.prefix for character in self.characters]
 
 # DM
 class DungeonMasterType(Enum):
@@ -244,10 +245,8 @@ class Approval:
                           "that should be posted in <#924069254637158441>",
                     inline=False)
         e.set_thumbnail(url=self.character.avatar)
-        # bot.pending_approvals.append(self)
         e.set_footer(text=f'{self.character.name}|{self.character.player.member.id}|Character Count: {self.character.player.character_count}')
         self.embed_to_approve = e
-        # return self.embed_to_approve
 
     @property
     def f(self):

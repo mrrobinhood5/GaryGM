@@ -23,3 +23,5 @@ Allows you to delete this character. Once delete it cannot be brought back, and 
 # /fast_travel
 Allows you to move a character from one district to another. You can only move approved characters, and move to a district or location you are allowed to be in.
 
+# ProxyGuy
+On character creation, you can make your prefix for your character. A prefix will always be before a `:`
