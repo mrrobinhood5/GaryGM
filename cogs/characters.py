@@ -7,7 +7,7 @@ from utils.help import Menu
 from config import ENTRY_POINTS, APPROVAL_REACTION, DENIAL_REACTION, DEFAULT_PC_AVATAR
 from typing import List
 
-# TODO add notification of approval
+
 # TODO add variants and familiars
 class CharacterCommands(commands.Cog, name='Character Commands'):
 
@@ -173,7 +173,7 @@ class CharacterCommands(commands.Cog, name='Character Commands'):
                         me.characters.pop(index)
                         break
             await msg.edit(embeds=approval.embed)
-        await payload.member.guild.system_channel.send(content=f'{payload.member.mention} Your character was {"Approved" if approval.approved else "Denied"}')
+            await payload.member.guild.system_channel.send(content=f'{payload.member.mention} Your character was {"Approved" if approval.approved else "Denied"}')
 
 
 def setup(bot):

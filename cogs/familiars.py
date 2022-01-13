@@ -1,7 +1,7 @@
 from disnake.ext import commands
 from disnake import ApplicationCommandInteraction, Member
 from utils.kerna_classes import  Player
-from utils.characters import Character, CharacterFamiliar
+from utils.characters import Character, CharacterFamiliar, CharacterVariant
 from utils.characters import CharacterChooseView
 
 from config import DEFAULT_FAM_AVATAR
@@ -48,6 +48,37 @@ class FamiliarCommands(commands.Cog, name='Familiar Commands'):
 
         view.character.add_familiar(familiar)
         await inter.edit_original_message(content="Added new familiar", view=None, embeds=[familiar.embed])
+        pass
+
+    @commands.slash_command()
+    async def variant(self, inter: ApplicationCommandInteraction):
+        pass
+
+    @familiar.sub_command()
+    async def add(self,
+                  inter: ApplicationCommandInteraction,
+                  name: str,
+                  prefix: str,
+                  avatar: str):
+        """ Command to add a new familiar
+
+        Parameters
+        ----------
+        inter: message interaction
+        name: Full name of your Familiar
+        prefix: prefix to append for RP,
+        avatar: URL for the Familiar's avatar
+        """
+        # Need to know which character this will go to
+        me, characters = self.get_player_characters(inter.author)
+        view = CharacterChooseView(characters, "variant")
+
+        await inter.send(content="This is a variant of which Character?", view=view, ephemeral=True)
+        await view.wait()
+        variant = CharacterVariant(character=view.character, name=name.title(), _prefix=prefix.rstrip(":"), avatar=avatar)
+
+        view.character.add_variant(variant)
+        await inter.edit_original_message(content="Added new variant", view=None, embeds=[variant.embed])
         pass
 
 def setup(bot):

@@ -107,6 +107,9 @@ class Character:
     def add_familiar(self, familiar: 'CharacterFamiliar'):
         self.familiars.append(familiar)
 
+    def add_variant(self, variant: 'CharacterVariant'):
+        self.variants.append(variant)
+
     @property
     def prefixes(self):
         return [familiar.prefix for familiar in self.familiars]
@@ -131,14 +134,8 @@ class CharacterFamiliar:
     @property
     def embed(self) -> Embed:
         """ Returns an embed representation of the Familiar """
-        e = Embed(title=self.name, description=f'Familiar belonging to {self.character.name}', color=Color.blue())
+        e = Embed(title=self.name, description=f'Belonging to {self.character.name}', color=Color.blue())
         e.add_field(name="Proxy Prefix", value=self.prefix)
-
-        # e.add_field(name="Location", value=self.location.name.lstrip('d: '), inline=False)
-        # e.add_field(name="Keys", value=None if not self.keys else [key.name for key in self.keys], inline=True)
-
-        # e.add_field(name="Familiars", value=self.familiars or None, inline=False)
-        # e.add_field(name="Variants", value=self.variants or None, inline=True)
         e.set_thumbnail(url=self.avatar)
         return e
 
@@ -160,6 +157,13 @@ class CharacterFamiliar:
         """ f returns a filter to the database for itself """
         return {"_id": self._id}
 
+
+@dataclass
+class CharacterVariant(CharacterFamiliar):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+
 class CharacterDeleteConfirm(Button):
     def __init__(self):
         super().__init__(
@@ -169,6 +173,7 @@ class CharacterDeleteConfirm(Button):
 
     async def callback(self, inter: MessageInteraction):
         self.view.stop()
+
 
 class CharacterAttributeDropdown(Select):
     def __init__(self):

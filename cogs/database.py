@@ -2,7 +2,7 @@ from disnake.ext.commands import option_enum
 from disnake.ext import commands, tasks
 from bson.objectid import ObjectId
 from utils.kerna_classes import Player
-from utils.characters import Character, CharacterFamiliar
+from utils.characters import Character, CharacterFamiliar, CharacterVariant
 
 
 class DatabaseActions(commands.Cog, name='Database Cache'):
@@ -31,6 +31,8 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
                 self.bot.db.characters.update_one(character.f, {'$set': character.to_dict}, upsert=True)
                 for familiar in character.familiars:
                     self.bot.db.familiars.update_one(familiar.f, {'$set': familiar.to_dict}, upsert=True)
+                for variant in character.variantts:
+                    self.bot.db.variants.update_one(variant.f, {'$set': variant.to_dict}, upsert=True)
 
     @tasks.loop(hours=12)
     async def config_variables(self):
@@ -65,8 +67,8 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
                         avatar=char['avatar'],
                         prefix=char['prefix'],
                         location=self.bot.guilds[0].get_role(int(char['location'])),
-                        variants=char['variants'],
-                        familiars=[], # load these objects
+                        variants=[],
+                        familiars=[],
                         approved=char['approved'], # load these objects
                         alive=char['alive'],
                         keys=[self.bot.guilds[0].get_role(int(key)) for key in char['keys']],
@@ -82,6 +84,16 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
                             _id=familiar['_id']
                         )
                         temp_char.add_familiar(temp_familiar)
+                    for db_variant in char['variants']: # gets all the familiar IDs from db_char
+                        familiar = await self.db.variants.find_one({"_id": db_variant})
+                        temp_variant = CharacterVariant(
+                            character=temp_char,
+                            name=familiar['name'],
+                            _prefix=familiar['_prefix'],
+                            avatar=familiar['avatar'],
+                            _id=familiar['_id']
+                        )
+                        temp_char.add_variant(temp_variant)
                 current_characters.append(temp_char)
             current_player.characters = current_characters
             self.bot.players.append(current_player)
