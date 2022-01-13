@@ -85,13 +85,13 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
                         )
                         temp_char.add_familiar(temp_familiar)
                     for db_variant in char['variants']: # gets all the familiar IDs from db_char
-                        familiar = await self.db.variants.find_one({"_id": db_variant})
+                        variant = await self.db.variants.find_one({"_id": db_variant})
                         temp_variant = CharacterVariant(
                             character=temp_char,
-                            name=familiar['name'],
-                            _prefix=familiar['_prefix'],
-                            avatar=familiar['avatar'],
-                            _id=familiar['_id']
+                            name=variant['name'],
+                            _prefix=variant['_prefix'],
+                            avatar=variant['avatar'],
+                            _id=variant['_id']
                         )
                         temp_char.add_variant(temp_variant)
                 current_characters.append(temp_char)
