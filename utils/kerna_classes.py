@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass, field
 from disnake import Embed, Member, Role, TextChannel, Color, Enum, RawReactionActionEvent
 from typing import List, Union
@@ -5,129 +6,12 @@ from bson.objectid import ObjectId
 from utils.npc import Npc
 from datetime import datetime
 from config import APPROVAL_REACTION, DENIAL_REACTION
+from utils.characters import Character
 
 
-@dataclass
-class Character:
-    player: 'Player'
-    name: str
-    backstory: str
-    avatar: str
-    prefix: str
-    location: Role
-    variants: List['CharacterVariant'] = None
-    familiars: List['CharacterFamiliar'] = None
-    approved: bool = False
-    alive: bool = True
-    keys: List[Role] = None
-    rpxp: int = 0
-    _id: ObjectId = ObjectId()
-
-    def update(self, attribute, changes):
-        self.__setattr__(attribute, changes)
-
-    @property
-    def to_dict(self):
-        """ Transform the character object to dict for DB entry"""
-        d = {
-            "_id": self._id,
-            "player": self.player.id,
-            "name": self.name,
-            "backstory": self.backstory,
-            "avatar": self.avatar,
-            "prefix": self.prefix,
-            "approved": self.approved,
-            "alive": self.alive,
-            "keys": [str(x.id) for x in self.keys] if self.keys else [],  # role id string
-            "location": str(self.location.id),  # role id string
-            "variants": [v.to_dict() for v in self.variants] if self.variants else [],
-            "familiars": [f.to_dict() for f in self.familiars] if self.familiars else [],
-            "rpxp": self.rpxp
-        }
-        return d
-
-    async def fast_travel(self, destination: Role) -> str:
-        """ Complete a fast-travel for this character """
-        # change the current characters location to its destination
-        original_location = self.location
-        self.location = destination
-
-        # remove the location if no one else has it
-        if original_location not in [character.location for character in self.player.characters if character.name != self.name]:
-            await self.player.member.remove_roles(original_location)
-
-        # add the role you went to
-        await self.player.member.add_roles(destination)
-
-        # self.save()  # need a better way of saving the character to DB
-        return f"`{self.name}` has traveled to `{destination.name.lstrip('d: ')}`"
-
-    def embed(self) -> Embed:
-        """ Returns an embed representation of the character """
-        e = Embed(title=self.name, description=self.backstory, color=Color.blue())
-        e.add_field(name="Proxy Prefix", value=self.prefix)
-
-        e.add_field(name="Location", value=self.location.name.lstrip('d: '), inline=False)
-        e.add_field(name="Keys", value=self.keys or None, inline=True)
-
-        e.add_field(name="Familiars", value=self.familiars or None, inline=False)
-        e.add_field(name="Variants", value=self.variants or None, inline=True)
-        e.set_thumbnail(url=self.avatar)
-        return e
-
-    def save(self):
-        """ Saves the Character to the cache """
-        # bot.db.players.update_one(self.f, {'$set': self.to_dict}, upsert=True)
-        pass
-
-    @property
-    def f(self) -> dict:
-        """ f returns a filter to the database for itself """
-        return {"_id": self._id}
-
-    @property
-    def district_name(self) -> str:
-        """ Returns the cleaned up name for the characters current district """
-        return self.location.name.lstrip("d: ")
-
-    @property
-    def channels(self) -> List[TextChannel]:
-        """ returns a list of channels that the character is able to see """
-        # I dont think we can pull up the channels from here
-        return [category.channels for category in self.location.guild.categories if category.name.lower() == self.location.name.lstrip("d: ").lower()][0]
-
-    @property
-    def id(self):
-        return self._id
-
-    def add_key(self, key: Role):
-        self.keys.append(key)
-
-class CharacterExtension:
-    character: Character
-    name: str
-    avatar: str
-    prefix: str  # variant prefixes will be prefixed by main character prefix. e.g. rob.undead
-
-    def to_dict(self) -> dict:
-        """ Returns a dict representation of a CharacterExtension """
-        d = {
-            "character": self.character.name,
-            "name": self.name,
-            "avatar": self.avatar,
-            "prefix": self.prefix
-        }
-        return d
 
 
-class CharacterFamiliar(CharacterExtension):
-
-    @property
-    def prefix(self) -> str:
-        return f'{super().character.prefix}.{self.prefix}'
-
-
-class CharacterVariant(CharacterExtension):
+class CharacterVariant:
 
     @property
     def prefix(self) -> str:
@@ -208,6 +92,9 @@ class Player:
     @property
     def prefixes(self):
         return [character.prefix for character in self.characters]
+
+
+
 
 # DM
 class DungeonMasterType(Enum):

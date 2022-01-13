@@ -1,7 +1,8 @@
 from disnake.ext.commands import option_enum
 from disnake.ext import commands, tasks
 from bson.objectid import ObjectId
-from utils.kerna_classes import Player, Character, Approval
+from utils.kerna_classes import Player
+from utils.characters import Character, CharacterFamiliar
 
 
 class DatabaseActions(commands.Cog, name='Database Cache'):
@@ -28,43 +29,62 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
             self.bot.db.players.update_one(player.f, {'$set': player.to_dict}, upsert=True)
             for character in player.characters:
                 self.bot.db.characters.update_one(character.f, {'$set': character.to_dict}, upsert=True)
+                for familiar in character.familiars:
+                    self.bot.db.familiars.update_one(familiar.f, {'$set': familiar.to_dict}, upsert=True)
 
     @tasks.loop(hours=12)
     async def config_variables(self):
         self.bot.APPROVAL_CHANNEL = self.bot.guilds[0].get_channel(924062961222447126)
         self.bot.NEW_PLAYER_ROLE = self.bot.guilds[0].get_role(921113949691334706)
+        self.bot.QUEST_DM_ROLES = [self.bot.guilds[0].get_role(925450330777473064),
+                                   self.bot.guilds[0].get_role(923051032202846218)]
         self.bot.DEFAULT_PC_AVATAR = 'https://i.imgur.com/v47ed3Y.jpg'
+        self.bot.CHANGE_LOG_CHANNEL = self.bot.guilds[0].get_channel(930985964472500315)
+
 
     @tasks.loop(seconds=2, count=1)
     async def initial_db_cache_load(self):
         """ Will run once and cache the whole db on the bot instance
         """
         # Load the players first, and its characters
-        async for player in self.db.players.find():
+        async for db_player in self.db.players.find():
             # this should be the only member
-            m = self.bot.guilds[0].get_member(int(player['member']))
-            p = Player(_id=player["_id"], member=m)
-            c = []
-            for character in player['characters']:
-                char = await self.db.characters.find_one({"_id": character})
+            member = self.bot.guilds[0].get_member(int(db_player['member']))
+            current_player = Player(_id=db_player["_id"], member=member)
+            current_characters = []
+
+            for db_character in db_player['characters']: # gets all the character IDs from db_player
+                char = await self.db.characters.find_one({"_id": db_character})
+                temp_char = None
                 if char:
-                    c.append(Character(
+                    temp_char = Character(
                         _id=char["_id"],
-                        player=p,
+                        player=current_player,
                         name=char['name'],
                         backstory=char['backstory'],
                         avatar=char['avatar'],
                         prefix=char['prefix'],
                         location=self.bot.guilds[0].get_role(int(char['location'])),
                         variants=char['variants'],
-                        familiars=char['familiars'], # load these objects
+                        familiars=[], # load these objects
                         approved=char['approved'], # load these objects
                         alive=char['alive'],
                         keys=[self.bot.guilds[0].get_role(int(key)) for key in char['keys']],
                         rpxp=char['rpxp']
-                    ))
-            p.characters = c
-            self.bot.players.append(p)
+                    )
+                    for db_familiar in char['familiars']: # gets all the familiar IDs from db_char
+                        familiar = await self.db.familiars.find_one({"_id": db_familiar})
+                        temp_familiar = CharacterFamiliar(
+                            character=temp_char,
+                            name=familiar['name'],
+                            _prefix=familiar['_prefix'],
+                            avatar=familiar['avatar'],
+                            _id=familiar['_id']
+                        )
+                        temp_char.add_familiar(temp_familiar)
+                current_characters.append(temp_char)
+            current_player.characters = current_characters
+            self.bot.players.append(current_player)
 
     @tasks.loop(seconds=600.0)
     async def help_pages_cache(self):

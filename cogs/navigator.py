@@ -1,5 +1,6 @@
 from disnake import ApplicationCommandInteraction, Member
-from utils.kerna_classes import Player, Character
+from utils.kerna_classes import Player
+from utils.characters import Character
 from typing import List
 from disnake.ext import commands
 from utils.navigator import FastTravelView
@@ -36,7 +37,7 @@ class NavigatorCommands(commands.Cog, name='Navigator Commands'):
 
         # Sending a message containing our view
         await inter.send("Fast Travel to where?", view=view, ephemeral=True)
-
+        # await inter.response.defer()
 
 def setup(bot):
     bot.add_cog(NavigatorCommands(bot))

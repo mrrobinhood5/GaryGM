@@ -67,9 +67,9 @@ class Agreement(disnake.ui.View):
 
 
 # TODO: Add a way to create new help pages
-def create_help_pages(inter):
+def create_help_pages(help_pages):
     embeds = []
-    help_pages = inter.bot.help_pages
+    # help_pages = inter.bot.help_pages
 
     for entry in help_pages:
         embed = Embed(title=entry['title'], description=entry['description'], color=Color.random())

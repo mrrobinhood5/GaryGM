@@ -21,7 +21,7 @@ class KeysDrowndown(Select):
 
         await inter.response.edit_message(content=f"The Key: `{key.name}`, has been given to {self.view.character.name}", view=self.view)
         # the tracker message
-        await inter.guild.get_channel(inter.channel_id).send(f'`{self.view.character.name}` has received the `{key.name}` key`')
+        await inter.guild.get_channel(inter.channel_id).send(f'`{self.view.character.name}` has received the `{key.name}` key')
         self.view.stop()
 
 

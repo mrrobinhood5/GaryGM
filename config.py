@@ -31,5 +31,7 @@ cogs.remove("__pycache__") if "__pycache__" in cogs else 0
 APPROVAL_REACTION = PartialEmoji(name="👍")
 DENIAL_REACTION = PartialEmoji(name="👎")
 DEFAULT_PC_AVATAR = 'https://i.imgur.com/v47ed3Y.jpg'
+DEFAULT_FAM_AVATAR = 'https://i.imgur.com/7vyXLK5.png'
 ENTRY_POINTS = option_enum({"Docks": "922262282539507752", "Gate": "922262406317633536", "Slums": "922262527587532830"})
 CHARACTER_ATTRIBUTES = option_enum({"Name": "name", "Backstory": "backstory", "Prefix": "prefix", "Avatar": "avatar"})
+

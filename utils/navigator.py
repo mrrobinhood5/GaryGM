@@ -1,6 +1,7 @@
 from disnake import SelectOption, MessageInteraction, Role
 from disnake.ui import Select, View
-from utils.kerna_classes import Character
+
+from utils.characters import Character
 from typing import List
 
 
@@ -65,8 +66,9 @@ class CharactersDropdown(Select):
         self.view.districts = [x for x in self.view.districts if x.name != self.view.character.location.name]
 
         # add your keys into the districts
-        for key in self.view.character.keys:
-            self.view.districts.append(key)
+        if self.view.character.keys:
+            for key in self.view.character.keys:
+                self.view.districts.append(key)
 
         self.view.add_item(DistrictsDropdown(self.view.districts))
 

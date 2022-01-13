@@ -5,6 +5,12 @@ from typing import List
 from utils.dm import DMGiveKeys
 
 
+def is_quest_dm():
+    async def predicate(ctx):
+        return any([[r == y for r in ctx.bot.QUEST_DM_ROLES] for y in ctx.author.roles])
+    return commands.check(predicate)
+
+
 class DungeonMasterCommands(commands.Cog, name='DungeonMaster Commands'):
 
     def __init__(self, bot):
@@ -20,6 +26,7 @@ class DungeonMasterCommands(commands.Cog, name='DungeonMaster Commands'):
         """ Commands for DMs """
         pass
 
+    @is_quest_dm()
     @dm.sub_command()
     async def give_key(self, inter: ApplicationCommandInteraction, player: Member):
         """ Gives a key to a Character """

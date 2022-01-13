@@ -1,12 +1,13 @@
+from __future__ import annotations
 from disnake.ext import commands
 from disnake import ApplicationCommandInteraction, RawReactionActionEvent, Message, Member
-from utils.kerna_classes import Character, Approval, Player
-from utils.characters import CharacterChooseView
+from utils.kerna_classes import Approval, Player
+from utils.characters import CharacterChooseView, Character
 from utils.help import Menu
 from config import ENTRY_POINTS, APPROVAL_REACTION, DENIAL_REACTION, DEFAULT_PC_AVATAR
 from typing import List
 
-
+# TODO add notification of approval
 # TODO add variants and familiars
 class CharacterCommands(commands.Cog, name='Character Commands'):
 
@@ -62,7 +63,7 @@ class CharacterCommands(commands.Cog, name='Character Commands'):
                              name=name.title(),
                              backstory=backstory,
                              avatar=avatar,
-                             prefix=prefix,
+                             prefix=prefix.rstrip(":"),
                              location=entry_point,
                              )
         me.add_character(new_char)
@@ -74,6 +75,7 @@ class CharacterCommands(commands.Cog, name='Character Commands'):
         # sends confirmation to the player and approval embed to the approval channel
         await inter.send(embeds=new_approval.embed, ephemeral=True)
         await inter.bot.APPROVAL_CHANNEL.send(embeds=new_approval.embed)
+
 
     @character.sub_command()
     async def list(self, inter: ApplicationCommandInteraction):
@@ -116,6 +118,7 @@ class CharacterCommands(commands.Cog, name='Character Commands'):
         view.character.update(view.attribute, msg.content)
 
         await inter.edit_original_message(view=None, embeds=[view.character.embed()])
+        await inter.bot.CHANGE_LOG_CHANNEL.send(content=f'`{view.character.name}` changed `{view.attribute}` to `{msg.content}`')
 
     @character.sub_command()
     async def delete(self, inter: ApplicationCommandInteraction):
@@ -138,6 +141,7 @@ class CharacterCommands(commands.Cog, name='Character Commands'):
         if view.character.location not in [character.location for character in me.characters]:
             await me.member.remove_roles(view.character.location)
         await inter.edit_original_message(content=f'`{view.character.name}` has been deleted!', view=None)
+        await inter.bot.CHANGE_LOG_CHANNEL.send(content=f'`{view.character.name}` has been deleted')
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: RawReactionActionEvent):
@@ -169,6 +173,7 @@ class CharacterCommands(commands.Cog, name='Character Commands'):
                         me.characters.pop(index)
                         break
             await msg.edit(embeds=approval.embed)
+        await payload.member.guild.system_channel.send(content=f'{payload.member.mention} Your character was {"Approved" if approval.approved else "Denied"}')
 
 
 def setup(bot):
