@@ -48,7 +48,7 @@ class FamiliarCommands(commands.Cog, name='Familiar Commands'):
 
         view.character.add_familiar(familiar)
         await inter.edit_original_message(content="Added new familiar", view=None, embeds=[familiar.embed])
-        pass
+        await inter.bot.CHANGE_LOG_CHANNEL.send(content=f'`{view.character.name}` added familiar `{familiar.name}`')
 
     @commands.slash_command()
     async def variant(self, inter: ApplicationCommandInteraction):
@@ -79,7 +79,7 @@ class FamiliarCommands(commands.Cog, name='Familiar Commands'):
 
         view.character.add_variant(variant)
         await inter.edit_original_message(content="Added new variant", view=None, embeds=[variant.embed])
-        pass
+        await inter.bot.CHANGE_LOG_CHANNEL.send(content=f'`{view.character.name}` added familiar `{variant.name}`')
 
 def setup(bot):
     bot.add_cog(FamiliarCommands(bot))

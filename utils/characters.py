@@ -124,6 +124,10 @@ class CharacterFamiliar:
     rpxp = 0
 
     @property
+    def dname(self):
+        return self.name+"🦊"
+
+    @property
     def id(self):
         return self._id
 
@@ -163,6 +167,9 @@ class CharacterVariant(CharacterFamiliar):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+    @property
+    def dname(self):
+        return self.name+"😎"
 
 class CharacterDeleteConfirm(Button):
     def __init__(self):

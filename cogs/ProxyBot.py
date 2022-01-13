@@ -1,7 +1,7 @@
 from disnake.ext import commands
 from disnake import Message, Webhook, TextChannel, Member
 from utils.kerna_classes import Player
-from utils.characters import Character, CharacterFamiliar
+from utils.characters import Character, CharacterFamiliar, CharacterVariant
 from typing import List
 
 
@@ -39,6 +39,8 @@ class ProxyBot(commands.Cog, name='ProxyBot'):
                 char_prefix = prefix.split(".")[0]
                 character: Character = [character for character in characters if character.prefix == char_prefix][0]
                 familiar: CharacterFamiliar = [familiar for familiar in character.familiars if familiar.prefix == prefix][0]
+                variant: CharacterVariant = [variant for variant in character.variants if variant.prefix == prefix][0]
+                target = [familiar or variant]
                 if character.district_name.lower() == msg.channel.category.name.lower():
                     if msg.reference: # this means it was a reply
                         m = self.bot.get_message(msg.reference.message_id)
@@ -47,8 +49,8 @@ class ProxyBot(commands.Cog, name='ProxyBot'):
                     webhook = await webhook_process(msg.channel)
                     await msg.delete()
                     if content != '':
-                        await webhook.send(content, username=familiar.name+"🦊", avatar_url=familiar.avatar)
-                        familiar.rpxp += 1
+                        await webhook.send(content, username=target.dname, avatar_url=target.avatar)
+                        target.rpxp += 1
                 else:
                     await msg.reply(f'`{character.name}` is not at this location. '
                                     f'Character is currently in `{character.location.name}`', delete_after=10)
