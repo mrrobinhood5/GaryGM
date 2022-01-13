@@ -54,7 +54,7 @@ class FamiliarCommands(commands.Cog, name='Familiar Commands'):
     async def variant(self, inter: ApplicationCommandInteraction):
         pass
 
-    @familiar.sub_command()
+    @variant.sub_command()
     async def add(self,
                   inter: ApplicationCommandInteraction,
                   name: str,

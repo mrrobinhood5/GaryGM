@@ -31,7 +31,7 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
                 self.bot.db.characters.update_one(character.f, {'$set': character.to_dict}, upsert=True)
                 for familiar in character.familiars:
                     self.bot.db.familiars.update_one(familiar.f, {'$set': familiar.to_dict}, upsert=True)
-                for variant in character.variantts:
+                for variant in character.variants:
                     self.bot.db.variants.update_one(variant.f, {'$set': variant.to_dict}, upsert=True)
 
     @tasks.loop(hours=12)
