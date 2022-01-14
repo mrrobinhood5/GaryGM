@@ -41,7 +41,7 @@ class Character:
             "alive": self.alive,
             "keys": [str(x.id) for x in self.keys] if self.keys else [],  # role id string
             "location": str(self.location.id),  # role id string
-            "variants": [v.to_dict for v in self.variants] if self.variants else [],
+            "variants": [v.id for v in self.variants] if self.variants else [],
             "familiars": [f.id for f in self.familiars] if self.familiars else [],
             "rpxp": self.rpxp
         }
