@@ -72,7 +72,7 @@ class Character:
         e.add_field(name="Keys", value=None if not self.keys else [key.name for key in self.keys], inline=True)
 
         e.add_field(name="Familiars", value=[familiar.name for familiar in self.familiars] or None, inline=False)
-        e.add_field(name="Variants", value=self.variants or None, inline=True)
+        e.add_field(name="Variants", value=[variant.name for variant in self.variants] or None, inline=True)
         e.set_thumbnail(url=self.avatar)
         return e
 

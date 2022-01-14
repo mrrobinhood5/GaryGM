@@ -38,8 +38,8 @@ class ProxyBot(commands.Cog, name='ProxyBot'):
             if "." in prefix: # its a familiar prefix
                 char_prefix = prefix.split(".")[0]
                 character: Character = [character for character in characters if character.prefix == char_prefix][0]
-                familiar: CharacterFamiliar = [familiar for familiar in character.familiars if familiar.prefix == prefix][0]
-                variant: CharacterVariant = [variant for variant in character.variants if variant.prefix == prefix][0]
+                familiar: CharacterFamiliar = [familiar for familiar in character.familiars if familiar.prefix == prefix][0] if character.familiars else None
+                variant: CharacterVariant = [variant for variant in character.variants if variant.prefix == prefix][0] if character.variants else None
                 target = [familiar or variant]
                 if character.district_name.lower() == msg.channel.category.name.lower():
                     if msg.reference: # this means it was a reply
