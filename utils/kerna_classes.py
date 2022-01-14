@@ -11,13 +11,6 @@ from utils.characters import Character
 
 
 
-class CharacterVariant:
-
-    @property
-    def prefix(self) -> str:
-        return f'{super().character.prefix}.{self.prefix}'
-
-
 # Quests
 class Quest:
     name: str
@@ -91,7 +84,14 @@ class Player:
 
     @property
     def prefixes(self):
-        return [character.prefix for character in self.characters]
+        p = []
+        for character in self.characters:
+            p.append((character.prefix, character))
+            for familiar in character.familiars:
+                p.append((familiar.prefix, familiar))
+            for variant in character.variants:
+                p.append(((variant.prefix, variant)))
+        return p
 
 
 

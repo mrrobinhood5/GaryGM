@@ -110,9 +110,14 @@ class Character:
     def add_variant(self, variant: 'CharacterVariant'):
         self.variants.append(variant)
 
-    @property
-    def prefixes(self):
-        return [familiar.prefix for familiar in self.familiars]
+    # @property
+    # def prefixes(self):
+    #     p = []
+    #     for familiar in self.familiars:
+    #         p.append(familiar.prefix)
+    #     for variant in self.variants:
+    #         p.append(variant.prefix)
+    #     return p
 
 @dataclass
 class CharacterFamiliar:
@@ -161,6 +166,9 @@ class CharacterFamiliar:
         """ f returns a filter to the database for itself """
         return {"_id": self._id}
 
+    @property
+    def district_name(self):
+        return self.character.district_name
 
 @dataclass
 class CharacterVariant(CharacterFamiliar):

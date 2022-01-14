@@ -35,44 +35,52 @@ class ProxyBot(commands.Cog, name='ProxyBot'):
             prefix = msg.content.split(":")[0]
             content = msg.content[msg.content.index(":") + 1:]
             me, characters = self.get_player_characters(msg.author)
-            if "." in prefix: # its a familiar prefix
-                char_prefix = prefix.split(".")[0]
-                character: Character = [character for character in characters if character.prefix == char_prefix][0]
-                familiar: CharacterFamiliar = [familiar for familiar in character.familiars if familiar.prefix == prefix][0] if character.familiars else None
-                variant: CharacterVariant = [variant for variant in character.variants if variant.prefix == prefix][0] if character.variants else None
-                target = [familiar or variant]
-                if character.district_name.lower() == msg.channel.category.name.lower():
-                    if msg.reference: # this means it was a reply
-                        m = self.bot.get_message(msg.reference.message_id)
-                        pre = f'> {m.content} \n@{m.author.name} - [jump]({m.jump_url})\n'
-                        content = pre + content
-                    webhook = await webhook_process(msg.channel)
-                    await msg.delete()
-                    if content != '':
-                        await webhook.send(content, username=target.dname, avatar_url=target.avatar)
-                        target.rpxp += 1
-                else:
-                    await msg.reply(f'`{character.name}` is not at this location. '
-                                    f'Character is currently in `{character.location.name}`', delete_after=10)
-                    await msg.delete(delay=10)
+            if prefix in [p[0] for p in me.prefixes]:
+                target = [p[1] for p in me.prefixes if prefix == p[0]]
+            if target.district_name.lower() == msg.channel.category.name.lower():
+                if msg.reference:  # this means it was a reply
+                    m = self.bot.get_message(msg.reference.message_id)
+                    pre = f'> {m.content} \n@{m.author.name} - [jump]({m.jump_url})\n'
+                    content = pre + content
+                webhook = await webhook_process(msg.channel)
+                await msg.delete()
+                if content != '':
+                    await webhook.send(content, username=target.dname, avatar_url=target.avatar)
+                    target.rpxp += 1
 
-            elif prefix in me.prefixes: #checks for character prefix
-                character: Character = [character for character in characters if character.prefix == prefix][0]
-                # this needs to have both districts or keys
-                if character.district_name.lower() == msg.channel.category.name.lower():
-                    if msg.reference: # this means it was a reply
-                        m = self.bot.get_message(msg.reference.message_id)
-                        pre = f'> {m.content} \n@{m.author.name} - [jump]({m.jump_url})\n'
-                        content = pre + content
-                    webhook = await webhook_process(msg.channel)
-                    await msg.delete()
-                    if content != '':
-                        await webhook.send(content, username=character.name, avatar_url=character.avatar)
-                        character.rpxp += 1
-                else:
-                    await msg.reply(f'`{character.name}` is not at this location. '
-                                    f'Character is currently in `{character.location.name}`', delete_after=10)
-                    await msg.delete(delay=10)
+            #
+            # if "." in prefix: # its a familiar prefix
+
+
+                # character: Character = [character for character in characters if character.prefix == char_prefix][0]
+                # if character.familiars:
+                #     familiar: CharacterFamiliar = [familiar for familiar in character.familiars if familiar.prefix == prefix][0]
+                # if character.variants:
+                #     variant: CharacterVariant = [variant for variant in character.variants if variant.prefix == prefix][0] if character.variants else None
+                # target = [familiar or variant]
+
+            #     else:
+            #         await msg.reply(f'`{character.name}` is not at this location. '
+            #                         f'Character is currently in `{character.location.name}`', delete_after=10)
+            #         await msg.delete(delay=10)
+            #
+            # elif prefix in me.prefixes: #checks for character prefix
+            #     character: Character = [character for character in characters if character.prefix == prefix][0]
+            #     # this needs to have both districts or keys
+            #     if character.district_name.lower() == msg.channel.category.name.lower():
+            #         if msg.reference: # this means it was a reply
+            #             m = self.bot.get_message(msg.reference.message_id)
+            #             pre = f'> {m.content} \n@{m.author.name} - [jump]({m.jump_url})\n'
+            #             content = pre + content
+            #         webhook = await webhook_process(msg.channel)
+            #         await msg.delete()
+            #         if content != '':
+            #             await webhook.send(content, username=character.name, avatar_url=character.avatar)
+            #             character.rpxp += 1
+            #     else:
+            #         await msg.reply(f'`{character.name}` is not at this location. '
+            #                         f'Character is currently in `{character.location.name}`', delete_after=10)
+            #         await msg.delete(delay=10)
 
 
 def setup(bot):
