@@ -35,8 +35,10 @@ class ProxyBot(commands.Cog, name='ProxyBot'):
             prefix = msg.content.split(":")[0]
             content = msg.content[msg.content.index(":") + 1:]
             me, characters = self.get_player_characters(msg.author)
-            if prefix in [p[0] for p in me.prefixes]:
+            if prefix.lower() in [p[0] for p in me.prefixes]:
                 target = [p[1] for p in me.prefixes if prefix == p[0]][0]
+            else:
+                return
             if target.district_name.lower() == msg.channel.category.name.lower():
                 if msg.reference:  # this means it was a reply
                     m = self.bot.get_message(msg.reference.message_id)
@@ -47,6 +49,11 @@ class ProxyBot(commands.Cog, name='ProxyBot'):
                 if content != '':
                     await webhook.send(content, username=target.dname, avatar_url=target.avatar)
                     target.rpxp += 1
+            else:
+                await msg.reply(f'`{target.name}` is not at this location. '
+                                f'Character is currently in `{target.location.name}`', delete_after=10)
+                await msg.delete(delay=10)
+
 
             #
             # if "." in prefix: # its a familiar prefix

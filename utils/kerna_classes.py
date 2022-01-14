@@ -86,11 +86,11 @@ class Player:
     def prefixes(self):
         p = []
         for character in self.characters:
-            p.append((character.prefix, character))
+            p.append((character.prefix.lower(), character))
             for familiar in character.familiars:
-                p.append((familiar.prefix, familiar))
+                p.append((familiar.prefix.lower(), familiar))
             for variant in character.variants:
-                p.append(((variant.prefix, variant)))
+                p.append((variant.prefix.lower(), variant))
         return p
 
 

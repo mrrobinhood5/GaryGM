@@ -126,7 +126,7 @@ class Character:
 class CharacterFamiliar:
     character: Character
     name: str
-    _prefix: str
+    prefix: str
     avatar: str
     _id: ObjectId = ObjectId()
     rpxp = 0
@@ -139,9 +139,9 @@ class CharacterFamiliar:
     def id(self):
         return self._id
 
-    @property
-    def prefix(self) -> str:
-        return f'{self.character.prefix}.{self._prefix}'
+    # @property
+    # def prefix(self) -> str:
+    #     return f'{self.character.prefix}.{self._prefix}'
 
     @property
     def embed(self) -> Embed:
@@ -159,7 +159,7 @@ class CharacterFamiliar:
             "character": self.character.id,
             "name": self.name,
             "avatar": self.avatar,
-            "_prefix": self._prefix,
+            "prefix": self.prefix,
             "rpxp": self.rpxp
         }
         return d
