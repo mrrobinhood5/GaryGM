@@ -29,10 +29,12 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
             self.bot.db.players.update_one(player.f, {'$set': player.to_dict}, upsert=True)
             for character in player.characters:
                 self.bot.db.characters.update_one(character.f, {'$set': character.to_dict}, upsert=True)
-                for familiar in character.familiars:
-                    self.bot.db.familiars.update_one(familiar.f, {'$set': familiar.to_dict}, upsert=True)
-                for variant in character.variants:
-                    self.bot.db.variants.update_one(variant.f, {'$set': variant.to_dict}, upsert=True)
+                if character.familiars:
+                    for familiar in character.familiars:
+                        self.bot.db.familiars.update_one(familiar.f, {'$set': familiar.to_dict}, upsert=True)
+                if character.variants:
+                    for variant in character.variants:
+                        self.bot.db.variants.update_one(variant.f, {'$set': variant.to_dict}, upsert=True)
 
     @tasks.loop(hours=12)
     async def config_variables(self):

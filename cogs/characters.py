@@ -38,20 +38,20 @@ class CharacterCommands(commands.Cog, name='Character Commands'):
     async def add(
             self,
             inter: ApplicationCommandInteraction,
+            entry_point: ENTRY_POINTS,
             name: str,
             backstory: str,
             prefix: str,
-            entry_point: ENTRY_POINTS,
             avatar: str = DEFAULT_PC_AVATAR):
         """ Command to register a new Player Character
 
         Parameters
         ----------
         inter: message interaction
+        entry_point: The point where you will start your RP, depends on your backstory
         name: Full name of your character
         backstory: Your tragic backstory
         prefix: this is what you will use to talk as your character, Tupperbox style.
-        entry_point: The point where you will start your RP, depends on your backstory
         avatar: URL to an image you want to use as the player avatar
         """
         # Get the player object from the cache
