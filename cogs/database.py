@@ -74,28 +74,26 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
                         keys=[self.bot.guilds[0].get_role(int(key)) for key in char['keys']],
                         rpxp=char['rpxp']
                     )
-                    if char['familiars']:
-                        for db_familiar in char['familiars']: # gets all the familiar IDs from db_char
-                            familiar = await self.db.familiars.find_one({"_id": db_familiar})
-                            temp_familiar = CharacterFamiliar(
-                                character=temp_char,
-                                name=familiar['name'],
-                                _prefix=familiar['_prefix'],
-                                avatar=familiar['avatar'],
-                                _id=familiar['_id']
-                            )
-                            temp_char.add_familiar(temp_familiar)
-                    if char['variants']:
-                        for db_variant in char['variants']: # gets all the familiar IDs from db_char
-                            variant = await self.db.variants.find_one({"_id": db_variant})
-                            temp_variant = CharacterVariant(
-                                character=temp_char,
-                                name=variant['name'],
-                                _prefix=variant['_prefix'],
-                                avatar=variant['avatar'],
-                                _id=variant['_id']
-                            )
-                            temp_char.add_variant(temp_variant)
+                    for db_familiar in char['familiars']: # gets all the familiar IDs from db_char
+                        familiar = await self.db.familiars.find_one({"_id": db_familiar})
+                        temp_familiar = CharacterFamiliar(
+                            character=temp_char,
+                            name=familiar['name'],
+                            _prefix=familiar['_prefix'],
+                            avatar=familiar['avatar'],
+                            _id=familiar['_id']
+                        ) if familiar else None
+                        temp_char.add_familiar(temp_familiar)
+                    for db_variant in char['variants']: # gets all the familiar IDs from db_char
+                        variant = await self.db.variants.find_one({"_id": db_variant})
+                        temp_variant = CharacterVariant(
+                            character=temp_char,
+                            name=variant['name'],
+                            _prefix=variant['_prefix'],
+                            avatar=variant['avatar'],
+                            _id=variant['_id']
+                        ) if variant else None
+                        temp_char.add_variant(temp_variant)
                 current_characters.append(temp_char)
             current_player.characters = current_characters
             self.bot.players.append(current_player)
