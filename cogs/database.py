@@ -43,7 +43,6 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
         self.bot.DEFAULT_PC_AVATAR = 'https://i.imgur.com/v47ed3Y.jpg'
         self.bot.CHANGE_LOG_CHANNEL = self.bot.guilds[0].get_channel(930985964472500315)
 
-
     @tasks.loop(seconds=2, count=1)
     async def initial_db_cache_load(self):
         """ Will run once and cache the whole db on the bot instance
@@ -55,7 +54,7 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
             current_player = Player(_id=db_player["_id"], member=member)
             current_characters = []
 
-            for db_character in db_player['characters']: # gets all the character IDs from db_player
+            for db_character in db_player['characters']:  # gets all the character IDs from db_player
                 char = await self.db.characters.find_one({"_id": db_character})
                 temp_char = None
                 if char:
@@ -69,31 +68,33 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
                         location=self.bot.guilds[0].get_role(int(char['location'])),
                         variants=[],
                         familiars=[],
-                        approved=char['approved'], # load these objects
+                        approved=char['approved'],  # load these objects
                         alive=char['alive'],
                         keys=[self.bot.guilds[0].get_role(int(key)) for key in char['keys']],
                         rpxp=char['rpxp']
                     )
-                    for db_familiar in char['familiars']: # gets all the familiar IDs from db_char
+                    for db_familiar in char['familiars']:  # gets all the familiar IDs from db_char
                         familiar = await self.db.familiars.find_one({"_id": db_familiar})
-                        temp_familiar = CharacterFamiliar(
-                            character=temp_char,
-                            name=familiar['name'],
-                            _prefix=familiar['_prefix'],
-                            avatar=familiar['avatar'],
-                            _id=familiar['_id']
-                        ) if familiar else None
-                        temp_char.add_familiar(temp_familiar)
-                    for db_variant in char['variants']: # gets all the familiar IDs from db_char
+                        if familiar:
+                            temp_familiar = CharacterFamiliar(
+                                character=temp_char,
+                                name=familiar['name'],
+                                _prefix=familiar['_prefix'],
+                                avatar=familiar['avatar'],
+                                _id=familiar['_id']
+                            )
+                            temp_char.add_familiar(temp_familiar)
+                    for db_variant in char['variants']:  # gets all the familiar IDs from db_char
                         variant = await self.db.variants.find_one({"_id": db_variant})
-                        temp_variant = CharacterVariant(
-                            character=temp_char,
-                            name=variant['name'],
-                            _prefix=variant['_prefix'],
-                            avatar=variant['avatar'],
-                            _id=variant['_id']
-                        ) if variant else None
-                        temp_char.add_variant(temp_variant)
+                        if variant:
+                            temp_variant = CharacterVariant(
+                                character=temp_char,
+                                name=variant['name'],
+                                _prefix=variant['_prefix'],
+                                avatar=variant['avatar'],
+                                _id=variant['_id']
+                            )
+                            temp_char.add_variant(temp_variant)
                 current_characters.append(temp_char)
             current_player.characters = current_characters
             self.bot.players.append(current_player)
