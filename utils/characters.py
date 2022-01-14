@@ -244,7 +244,7 @@ class CharactersDropdown(Select):
             self.view.add_item(CharacterDeleteConfirm())
 
         await inter.edit_original_message(view=self.view)
-        self.view.stop()
+
 
 
 class CharacterChooseView(View):
