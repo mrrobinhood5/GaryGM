@@ -44,7 +44,7 @@ class FamiliarCommands(commands.Cog, name='Familiar Commands'):
 
         await inter.send(content="This will belong to which Character?", view=view, ephemeral=True)
         await view.wait()
-        familiar = CharacterFamiliar(character=view.character, name=name.title(), _prefix=prefix.rstrip(":"), avatar=avatar)
+        familiar = CharacterFamiliar(character=view.character, name=name.title(), prefix=prefix.rstrip(":"), avatar=avatar)
 
         view.character.add_familiar(familiar)
         await inter.edit_original_message(content="Added new familiar", view=None, embeds=[familiar.embed])
@@ -75,7 +75,7 @@ class FamiliarCommands(commands.Cog, name='Familiar Commands'):
 
         await inter.send(content="This is a variant of which Character?", view=view, ephemeral=True)
         await view.wait()
-        variant = CharacterVariant(character=view.character, name=name.title(), _prefix=prefix.rstrip(":"), avatar=avatar)
+        variant = CharacterVariant(character=view.character, name=name.title(), prefix=prefix.rstrip(":"), avatar=avatar)
 
         view.character.add_variant(variant)
         await inter.edit_original_message(content="Added new variant", view=None, embeds=[variant.embed])

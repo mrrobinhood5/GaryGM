@@ -81,7 +81,7 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
                             temp_familiar = CharacterFamiliar(
                                 character=temp_char,
                                 name=familiar['name'],
-                                _prefix=familiar['prefix'],
+                                prefix=familiar['prefix'],
                                 avatar=familiar['avatar'],
                                 _id=familiar['_id']
                             )
@@ -92,7 +92,7 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
                             temp_variant = CharacterVariant(
                                 character=temp_char,
                                 name=variant['name'],
-                                _prefix=variant['prefix'],
+                                prefix=variant['prefix'],
                                 avatar=variant['avatar'],
                                 _id=variant['_id']
                             )
