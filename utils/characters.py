@@ -24,6 +24,9 @@ class Character:
     def __repr__(self):
         return str(self.to_dict)
 
+    @property
+    def dname(self):
+        return self.name + "⚔"
     def update(self, attribute, changes):
         self.__setattr__(attribute, changes)
 
