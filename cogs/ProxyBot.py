@@ -36,7 +36,7 @@ class ProxyBot(commands.Cog, name='ProxyBot'):
             content = msg.content[msg.content.index(":") + 1:]
             me, characters = self.get_player_characters(msg.author)
             if prefix in [p[0] for p in me.prefixes]:
-                target = [p[1] for p in me.prefixes if prefix == p[0]]
+                target = [p[1] for p in me.prefixes if prefix == p[0]][0]
             if target.district_name.lower() == msg.channel.category.name.lower():
                 if msg.reference:  # this means it was a reply
                     m = self.bot.get_message(msg.reference.message_id)
