@@ -1,7 +1,6 @@
 from disnake.ext import commands
 from disnake import ApplicationCommandInteraction, Member
 from utils.help import Menu, create_help_pages, Agreement
-from utils.kerna_classes import Player
 
 
 class Help(commands.Cog, name='Help'):
@@ -29,8 +28,8 @@ class Help(commands.Cog, name='Help'):
     @commands.Cog.listener()
     async def on_member_join(self, member):
         # check to see if the player is already here
-        if member.id not in [m.member.id for m in self.bot.players]:
-            self.bot.players.append(Player(member))
+        # if member.id not in [m.member.id for m in self.bot.players]:
+        #     self.bot.players.append(Player(member))
         await self.omj(member, member)
 
     @commands.slash_command()

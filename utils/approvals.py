@@ -1,41 +1,62 @@
-# from typing import Union, List
-# from disnake import Role, Embed, Color
-# from utils.characters import Character, CharacterFamiliar, CharacterVariant
+from __future__ import annotations
+from typing import List
+from disnake import Embed, Color, RawReactionActionEvent
+from utils.characters import Character
 # from utils.player import DungeonMaster
-# from main import bot
-# from dataclasses import dataclass
+from dataclasses import dataclass
+from config import APPROVAL_REACTION
 
 
+@dataclass
+class Approval:
+    character: Character
+    embed_to_approve: Embed = None
+    approver = None
+    approved: bool = False
+    # approval_id: str = embed_to_approve.footer.text
 
+    def __post_init__(self) -> None:
+        """ Build the Embed to request approval character."""
+        e = Embed(title="Approval Started",
+                  description=f"Submitted by **{self.character.player.member.name}**", color=Color.blue())
+        e.add_field(name=self.character.name, value=self.character.backstory, inline=False),
+        e.add_field(name="Start Point", value=self.character.location.name)
+        e.add_field(name="Proxy Prefix", value=self.character.prefix)
+        e.add_field(name="DM Actions",
+                    value="DM will review your backstory and your `!vsheet` "
+                          "that should be posted in <#924069254637158441>",
+                    inline=False)
+        e.set_thumbnail(url=self.character.avatar)
+        e.set_footer(text=f'{self.character.name}|{self.character.player.member.id}|Character Count: {self.character.player.character_count}')
+        self.embed_to_approve = e
 
+    @property
+    def f(self):
+        """ returns the filter dict to find it in the database """
+        return {"character": self.character.name}
 
-# class Approval:
-#
-#     def __init__(self, msg, payload):
-#         self.approver = payload.member.name #
-#         self.embed = msg.embeds[0] #
-#         self.embed.title = self.embed.title.replace("Started", "Complete")
-#         self.player = msg.guild.get_member(int(self.embed.footer.text.split("|")[0]))
-#         self.role = msg.guild.get_role(int(self.embed.footer.text.split("|")[1]))
-#         self.name = self.embed.fields[0].name
-#         self.approval = True if payload.emoji == APPROVAL_REACTION else False
-#         self.embed.description += f'\n{"Approved" if self.approval else "Disapproved"} by **{self.approver}**'
-#
-#     @property
-#     def f(self):
-#         """ f is used as the db filter """
-#         r = {"player": str(self.player.id), "character": self.name}
-#         return r
-#
-#     async def process_character(self):
-#         if self.approval:
-#             self.embed.color = Color.green()
-#             bot.db.players.update_one(self.f, {'$set': {"approved": True}}, upsert=True)
-#             await self.player.add_roles(self.role)
-#             await self.player.remove_roles(bot.NEW_PLAYER_ROLE)
-#         else:
-#             self.embed.color = Color.red()
-#             await bot.db.players.delete_one(self.f)
-#
-#     def get_embed(self):
-#         return [self.embed]
+    @property
+    def to_dict(self):
+        """ sends its dict representation for saving into db """
+        d = {
+            "character": self.character.name,
+            "embed_to_approve": self.embed_to_approve.to_dict(),
+            "approved": self.approved
+        }
+        return d
+
+    @property
+    def embed(self) -> List[Embed]:
+        return [self.embed_to_approve]
+
+    def process_approval(self, payload: RawReactionActionEvent):
+        if payload.emoji == APPROVAL_REACTION:
+            self.embed_to_approve.title = self.embed_to_approve.title.replace("Started", "Complete")
+            self.embed_to_approve.description += f"\nApproved by **{payload.member.name}**"
+            self.embed_to_approve.colour = Color.green()
+            self.character.approved = True
+            self.approved = True
+        else:
+            self.embed_to_approve.title = self.embed_to_approve.title.replace("Started", "Complete")
+            self.embed_to_approve.description += f"\nDenied by **{payload.member.name}**"
+            self.embed_to_approve.colour = Color.red()

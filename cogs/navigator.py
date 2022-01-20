@@ -1,5 +1,5 @@
 from disnake import ApplicationCommandInteraction, Member
-from utils.kerna_classes import Player
+from utils.player import Player
 from utils.characters import Character
 from typing import List
 from disnake.ext import commands

@@ -1,42 +1,46 @@
+from __future__ import annotations
 import disnake
-from disnake import ApplicationCommandInteraction, Embed
+from disnake import Embed
+from utils.player import Player
+from bson import ObjectId
+from typing import List
+from dataclasses import dataclass, field
+
 
 # TODO: Move this to bot attrs
 DEFAULT_NPC_AVATAR = 'https://i.imgur.com/ET6JF3H.png'
 
 
+@dataclass
 class Npc:
-
-    def __init__(self, inter: ApplicationCommandInteraction, d: dict = {}):
-        for k, v in d.items():
-            self.__setattr__(k, v)
-        self.db = inter.bot.db
-        self.__post_init__()
+    owner: Player
+    name: str
+    prefix: str
+    avatar: str = DEFAULT_NPC_AVATAR
+    _id: ObjectId = ObjectId()
+    rpxp: int = 0
+    users: List[Player] = field(default_factory=list)
 
     def __post_init__(self):
         """ post init processing """
         self.name = self.name.title()
-        self.roles = []
 
     @property
     def f(self):
         """ build the filter for the db """
-        r = {"name": self.name}
+        r = {"_id": self._id}
         return r
-
-    def save(self):
-        """ save it to the db """
-        self.db.npc.update_one(self.f, {'$set': self.to_dict()}, upsert=True)
-
 
     def to_dict(self):
         """ build a dict to save to db """
         d = {
+            "_id": self._id,
             "name": self.name,
             "prefix": self.prefix,
             "avatar": self.avatar,
-            "owner": str(self.owner.id),
-            "roles": self.roles
+            "owner": self.owner.id,
+            "users": [u.id for u in self.users],
+            "rpxp": self.rpxp
         }
         return d
 

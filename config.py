@@ -1,6 +1,4 @@
 import os
-
-import disnake
 from disnake import Intents, PartialEmoji
 from disnake.ext.commands import option_enum
 
@@ -9,7 +7,7 @@ from disnake.ext.commands import option_enum
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 BOT_PREFIX = "."
 TEST_GUILDS = [920857756146221096]
-BOT_AUTHOR_ID = "623277032930803742"
+BOT_AUTHOR_ID = 623277032930803742
 INTENTS = Intents(
     guilds=True, members=True, messages=True, reactions=True,
     bans=False, emojis=False, integrations=False, webhooks=True, invites=False, voice_states=False, presences=False,

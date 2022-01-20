@@ -1,7 +1,8 @@
 from __future__ import annotations
 from disnake.ext import commands
 from disnake import ApplicationCommandInteraction, RawReactionActionEvent, Message, Member
-from utils.kerna_classes import Approval, Player
+from utils.player import Player
+from utils.approvals import Approval
 from utils.characters import CharacterChooseView, Character
 from utils.help import Menu
 from config import ENTRY_POINTS, APPROVAL_REACTION, DENIAL_REACTION, DEFAULT_PC_AVATAR
@@ -173,7 +174,7 @@ class CharacterCommands(commands.Cog, name='Character Commands'):
                         me.characters.pop(index)
                         break
             await msg.edit(embeds=approval.embed)
-            await payload.member.guild.system_channel.send(content=f'{payload.member.mention} Your character was {"Approved" if approval.approved else "Denied"}')
+            await payload.member.guild.system_channel.send(content=f'{approval.character.player.member.mention} Your character was {"Approved" if approval.approved else "Denied"}')
 
 
 def setup(bot):

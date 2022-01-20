@@ -1,6 +1,6 @@
 from disnake.ext import commands
 from disnake import ApplicationCommandInteraction, Member
-from utils.kerna_classes import  Player
+from utils.player import Player
 from utils.characters import Character, CharacterFamiliar, CharacterVariant
 from utils.characters import CharacterChooseView
 

@@ -1,6 +1,7 @@
 from disnake.ext import commands
 from disnake import Member, ApplicationCommandInteraction
-from utils.kerna_classes import Player, Character
+from utils.player import Player
+from utils.characters import Character
 from typing import List
 from utils.dm import DMGiveKeys
 

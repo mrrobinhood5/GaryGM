@@ -1,21 +1,129 @@
-from disnake.ext.commands import option_enum
+from __future__ import annotations
+from disnake.ext.commands import option_enum, Bot
 from disnake.ext import commands, tasks
-from bson.objectid import ObjectId
-from utils.kerna_classes import Player
+from motor.motor_asyncio import AsyncIOMotorDatabase
+from utils.player import Player
 from utils.characters import Character, CharacterFamiliar, CharacterVariant
 
 
 class DatabaseActions(commands.Cog, name='Database Cache'):
     """ Database cache should only pull once when the bot is started, and push every 5 minutes maybe """
 
-    def __init__(self, bot):
-        self.bot = bot
-        self.db = self.bot.db
+    def __init__(self, bot) -> None:
+        self.bot: Bot = bot
+        self.db: AsyncIOMotorDatabase = self.bot.db
         self.initial_db_cache_load.start()
         self.db_data_dump.start()
         self.help_pages_cache.start()
         self.npc_cache.start()
         self.config_variables.start()
+
+    @tasks.loop(seconds=2, count=1)
+    async def initial_db_cache_load(self):
+        """ Will run once and cache the whole db on the bot instance """
+        # Load members the bot can see
+        all_members = self.bot.get_all_members()
+        # go through them all and match them with the database
+        for member in all_members:
+            # loads any player matching the member id initializes an empty player if a match is found
+            db_player = await self.db.players.find_one({"member": member.id})
+            if db_player:
+                player = Player(_id=db_player["_id"], member=member)
+                # fetches all db characters with matching player id, and iterates over them if any are found
+                db_characters = self.db.characters.find({"player": db_player["_id"]})
+                if db_characters:
+                    # goes through each character and initializes it. leaves variants and familiars empty
+                    async for c in db_characters:
+                        keys = [member.guild.get_role(k) for k in c['keys']] if c['keys'] else []
+                        character = Character(_id=c['_id'],
+                                              player=player,
+                                              name=c['name'],
+                                              backstory=c['backstory'],
+                                              avatar=c['avatar'],
+                                              prefix=c['prefix'],
+                                              location=member.guild.get_role(c['location']),
+                                              approved=c['approved'],
+                                              alive=c['alive'],
+                                              keys=keys,
+                                              rpxp=c['rpxp']
+                                              )
+                        if c['variants']:
+                            db_variants = self.db.variants.find({"character": c['_id']})
+                            async for v in db_variants:
+                                variant = CharacterVariant(
+                                    _id=v['_id'],
+                                    character=character,
+                                    name=v['name'],
+                                    prefix=v['prefix'],
+                                    avatar=v['avatar'],
+                                    rpxp=v['rpxp'])
+                                character.add_variant(variant)
+                        if c['familiars']:
+                            db_familiars = self.db.familiars.find({"character": c['_id']})
+                            async for f in db_familiars:
+                                familiar = CharacterFamiliar(
+                                    _id=f['_id'],
+                                    character=character,
+                                    name=f['name'],
+                                    prefix=f['prefix'],
+                                    avatar=f['avatar'],
+                                    rpxp=f['rpxp'])
+                                character.add_familiar(familiar)
+                        player.add_character(character)
+                self.bot.players.append(player)
+
+        #
+        #
+        # async for db_player in self.db.players.find():
+        #     # this should be the only member
+        #     member = self.bot.guilds[0].get_member(int(db_player['member']))
+        #     current_player = Player(_id=db_player["_id"], member=member)
+        #     current_characters = []
+        #
+        #     for db_character in db_player['characters']:  # gets all the character IDs from db_player
+        #         char = await self.db.characters.find_one({"_id": db_character})
+        #         temp_char = None
+        #         if char:
+        #             temp_char = Character(
+        #                 _id=char["_id"],
+        #                 player=current_player,
+        #                 name=char['name'],
+        #                 backstory=char['backstory'],
+        #                 avatar=char['avatar'],
+        #                 prefix=char['prefix'],
+        #                 location=self.bot.guilds[0].get_role(int(char['location'])),
+        #                 variants=[],
+        #                 familiars=[],
+        #                 approved=char['approved'],  # load these objects
+        #                 alive=char['alive'],
+        #                 keys=[self.bot.guilds[0].get_role(int(key)) for key in char['keys']],
+        #                 rpxp=char['rpxp']
+        #             )
+        #             for db_familiar in char['familiars']:  # gets all the familiar IDs from db_char
+        #                 familiar = await self.db.familiars.find_one({"_id": db_familiar})
+        #                 if familiar:
+        #                     temp_familiar = CharacterFamiliar(
+        #                         character=temp_char,
+        #                         name=familiar['name'],
+        #                         prefix=familiar['prefix'],
+        #                         avatar=familiar['avatar'],
+        #                         _id=familiar['_id']
+        #                     )
+        #                     temp_char.add_familiar(temp_familiar)
+        #             for db_variant in char['variants']:  # gets all the familiar IDs from db_char
+        #                 variant = await self.db.variants.find_one({"_id": db_variant})
+        #                 if variant:
+        #                     temp_variant = CharacterVariant(
+        #                         character=temp_char,
+        #                         name=variant['name'],
+        #                         prefix=variant['prefix'],
+        #                         avatar=variant['avatar'],
+        #                         _id=variant['_id']
+        #                     )
+        #                     temp_char.add_variant(temp_variant)
+        #         current_characters.append(temp_char)
+        #     current_player.characters = current_characters
+        #     self.bot.players.append(current_player)
 
     @tasks.loop(minutes=1)
     async def db_data_dump(self):
@@ -45,61 +153,7 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
         self.bot.DEFAULT_PC_AVATAR = 'https://i.imgur.com/v47ed3Y.jpg'
         self.bot.CHANGE_LOG_CHANNEL = self.bot.guilds[0].get_channel(930985964472500315)
 
-    @tasks.loop(seconds=2, count=1)
-    async def initial_db_cache_load(self):
-        """ Will run once and cache the whole db on the bot instance
-        """
-        # Load the players first, and its characters
-        async for db_player in self.db.players.find():
-            # this should be the only member
-            member = self.bot.guilds[0].get_member(int(db_player['member']))
-            current_player = Player(_id=db_player["_id"], member=member)
-            current_characters = []
 
-            for db_character in db_player['characters']:  # gets all the character IDs from db_player
-                char = await self.db.characters.find_one({"_id": db_character})
-                temp_char = None
-                if char:
-                    temp_char = Character(
-                        _id=char["_id"],
-                        player=current_player,
-                        name=char['name'],
-                        backstory=char['backstory'],
-                        avatar=char['avatar'],
-                        prefix=char['prefix'],
-                        location=self.bot.guilds[0].get_role(int(char['location'])),
-                        variants=[],
-                        familiars=[],
-                        approved=char['approved'],  # load these objects
-                        alive=char['alive'],
-                        keys=[self.bot.guilds[0].get_role(int(key)) for key in char['keys']],
-                        rpxp=char['rpxp']
-                    )
-                    for db_familiar in char['familiars']:  # gets all the familiar IDs from db_char
-                        familiar = await self.db.familiars.find_one({"_id": db_familiar})
-                        if familiar:
-                            temp_familiar = CharacterFamiliar(
-                                character=temp_char,
-                                name=familiar['name'],
-                                prefix=familiar['prefix'],
-                                avatar=familiar['avatar'],
-                                _id=familiar['_id']
-                            )
-                            temp_char.add_familiar(temp_familiar)
-                    for db_variant in char['variants']:  # gets all the familiar IDs from db_char
-                        variant = await self.db.variants.find_one({"_id": db_variant})
-                        if variant:
-                            temp_variant = CharacterVariant(
-                                character=temp_char,
-                                name=variant['name'],
-                                prefix=variant['prefix'],
-                                avatar=variant['avatar'],
-                                _id=variant['_id']
-                            )
-                            temp_char.add_variant(temp_variant)
-                current_characters.append(temp_char)
-            current_player.characters = current_characters
-            self.bot.players.append(current_player)
 
     @tasks.loop(seconds=600.0)
     async def help_pages_cache(self):

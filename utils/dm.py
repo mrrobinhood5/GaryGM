@@ -1,6 +1,6 @@
 from disnake import SelectOption, MessageInteraction, Role
 from disnake.ui import Select, View
-from utils.kerna_classes import Character
+from utils.characters import Character
 from typing import List
 
 

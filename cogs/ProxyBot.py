@@ -1,17 +1,12 @@
+from __future__ import annotations
 from disnake.ext import commands
 from disnake import Message, Webhook, TextChannel, Member
-from utils.kerna_classes import Player
+from utils.player import Player
 from utils.characters import Character, CharacterFamiliar, CharacterVariant
 from typing import List
 
 
-async def webhook_process(channel: TextChannel) -> Webhook:
-    webhooks = await channel.webhooks()
-    if "Kerna Proxy Service" not in [webhook.name for webhook in webhooks]:
-        webhook = await channel.create_webhook(name="Kerna Proxy Service")
-    else:
-        webhook = [webhook for webhook in webhooks if webhook.name == "Kerna Proxy Service"][0]
-    return webhook
+
 
 
 class ProxyBot(commands.Cog, name='ProxyBot'):
@@ -32,27 +27,20 @@ class ProxyBot(commands.Cog, name='ProxyBot'):
         # TODO: Make it so edits also trigger this
         # determine if its a potential prefix
         if ':' in msg.content and not msg.author.bot:
-            prefix = msg.content.split(":")[0]
-            content = msg.content[msg.content.index(":") + 1:]
+            prefix = msg.content.split(":")[0].lower().rstrip()
             me, characters = self.get_player_characters(msg.author)
-            if prefix.lower() in [p[0] for p in me.prefixes]:
-                target = [p[1] for p in me.prefixes if prefix == p[0]][0]
+            if prefix in [p[0] for p in me.prefixes]:
+                target: Character = [p[1] for p in me.prefixes if prefix == p[0]][0]
             else:
                 return
             if target.district_name.lower() == msg.channel.category.name.lower():
-                if msg.reference:  # this means it was a reply
-                    m = self.bot.get_message(msg.reference.message_id)
-                    pre = f'> {m.content} \n@{m.author.name} - [jump]({m.jump_url})\n'
-                    content = pre + content
-                webhook = await webhook_process(msg.channel)
-                await msg.delete()
-                if content != '':
-                    await webhook.send(content, username=target.dname, avatar_url=target.avatar)
-                    target.rpxp += 1
+                await target.say(msg)
             else:
                 await msg.reply(f'`{target.name}` is not at this location. '
                                 f'Character is currently in `{target.location.name}`', delete_after=10)
                 await msg.delete(delay=10)
+
+
 
 
             #

@@ -1,9 +1,17 @@
 from __future__ import annotations
-from dataclasses import dataclass
-from disnake import SelectOption, MessageInteraction, ButtonStyle, Role, Embed, Color, TextChannel
+from dataclasses import dataclass, field
+from disnake import SelectOption, MessageInteraction, ButtonStyle, Role, Embed, Color, TextChannel, Message, Webhook
 from disnake.ui import View, Select, Button
 from typing import List
 from bson import ObjectId
+
+async def webhook_process(channel: TextChannel) -> Webhook:
+    webhooks = await channel.webhooks()
+    if "Kerna Proxy Service" not in [webhook.name for webhook in webhooks]:
+        webhook = await channel.create_webhook(name="Kerna Proxy Service")
+    else:
+        webhook = [webhook for webhook in webhooks if webhook.name == "Kerna Proxy Service"][0]
+    return webhook
 
 @dataclass
 class Character:
@@ -13,8 +21,8 @@ class Character:
     avatar: str
     prefix: str
     location: Role
-    variants: List['CharacterVariant'] = None
-    familiars: List['CharacterFamiliar'] = None
+    variants: List['CharacterVariant'] = field(default_factory=list)
+    familiars: List['CharacterFamiliar'] = field(default_factory=list)
     approved: bool = False
     alive: bool = True
     keys: List[Role] = None
@@ -22,7 +30,21 @@ class Character:
     _id: ObjectId = ObjectId()
 
     def __repr__(self):
-        return str(self.to_dict)
+        return f'<Player: {self.player}, Character: {self.name}, Prefix: {self.prefix}, Familiars: {self.familiars}, Variants: {self.variants}'
+
+    async def say(self, msg: Message):
+        content = msg.content[msg.content.index(":") + 1:]
+        if msg.reference:  # this means it was a reply
+            m: Message = msg.reference.cached_message
+            pre = f'> {m.content} \n@{m.author.name} - [jump]({m.jump_url})\n'
+            content = pre + content
+        webhook = await webhook_process(msg.channel)
+        await msg.delete()
+        if msg.content != '':
+            await webhook.send(content, username=self.dname, avatar_url=self.avatar)
+            self.rpxp += 1
+
+
 
     @property
     def dname(self):
@@ -42,8 +64,8 @@ class Character:
             "prefix": self.prefix,
             "approved": self.approved,
             "alive": self.alive,
-            "keys": [str(x.id) for x in self.keys] if self.keys else [],  # role id string
-            "location": str(self.location.id),  # role id string
+            "keys": [k.id for k in self.keys] if self.keys else [],  # role id string
+            "location": self.location.id,
             "variants": [v.id for v in self.variants] if self.variants else [],
             "familiars": [f.id for f in self.familiars] if self.familiars else [],
             "rpxp": self.rpxp
@@ -129,7 +151,10 @@ class CharacterFamiliar:
     prefix: str
     avatar: str
     _id: ObjectId = ObjectId()
-    rpxp = 0
+    rpxp: int = 0
+
+    async def say(self, msg):
+        await Character.say(self, msg)
 
     @property
     def dname(self):
@@ -138,10 +163,6 @@ class CharacterFamiliar:
     @property
     def id(self):
         return self._id
-
-    # @property
-    # def prefix(self) -> str:
-    #     return f'{self.character.prefix}.{self._prefix}'
 
     @property
     def embed(self) -> Embed:
@@ -172,6 +193,9 @@ class CharacterFamiliar:
     @property
     def district_name(self):
         return self.character.district_name
+
+    def __repr__(self):
+        return f'<Name: {self.name}, prefix: {self.prefix}, rpxp: {self.rpxp}>'
 
 @dataclass
 class CharacterVariant(CharacterFamiliar):
