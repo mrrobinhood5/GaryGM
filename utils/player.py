@@ -4,6 +4,7 @@ from bson import ObjectId
 from disnake import Member, Embed
 from typing import List
 from utils.characters import Character
+from utils.npc import Npc
 from utils.dungeon_master import DungeonMasterType
 
 
@@ -12,6 +13,7 @@ from utils.dungeon_master import DungeonMasterType
 class Player:
     member: Member
     characters: List[Character] = field(default_factory=list)
+    npcs: List[Npc] = field(default_factory=list)
     _id: ObjectId = ObjectId()
     dm_type: DungeonMasterType = 0
 
@@ -19,9 +21,17 @@ class Player:
         """ Add a Character object to a Player instance """
         self.characters.append(character)
 
+    def add_npc(self, npc: Npc):
+        """ Add an NPC object to a player intance """
+        self.npcs.append(npc)
+
     def delete_character(self, character: Character):
         """ Remove a Character object from a Player instance """
         return self.characters.pop(self.characters.index(character))
+
+    def delete_npc(self, npc: Npc):
+        """ Remove an NPC object from a Player instance """
+        return self.npcs.pop(self.npcs.index(npc))
 
     @property
     def districts(self) -> List[str]:
@@ -35,9 +45,15 @@ class Player:
     def character_list(self) -> List[Embed]:
         """ Lists all your characters """
         # how is this different player.characters?
-        character_list = []
+        character_list = [c.embed for c in self.characters]
         return character_list
-        pass
+
+
+    @property
+    def npc_list(self) -> List[Embed]:
+        """ Lists all of your NPCs"""
+        npc_list = [n.embed for n in self.npcs]
+        return npc_list
 
     @property
     def f(self):

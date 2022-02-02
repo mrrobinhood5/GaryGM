@@ -8,7 +8,7 @@ from utils.dm import DMGiveKeys
 
 def is_quest_dm():
     async def predicate(ctx):
-        return any([[r == y for r in ctx.bot.QUEST_DM_ROLES] for y in ctx.author.roles])
+        return any([any([r == y for r in ctx.bot.QUEST_DM_ROLES]) for y in ctx.author.roles])
     return commands.check(predicate)
 
 

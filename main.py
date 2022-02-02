@@ -18,6 +18,7 @@ bot.players = []
 bot.get_player = lambda x: [p for p in bot.players if x.lower() in p.member.name.lower()][0]
 bot.pending_approvals = []
 bot.character_delete_queue = []
+bot.shared_npcs = []
 
 # custom instance of bot
 # bot = KernaBot(db, BOT_PREFIX, INTENTS, TEST_GUILDS)

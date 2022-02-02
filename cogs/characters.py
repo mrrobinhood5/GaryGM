@@ -91,7 +91,7 @@ class CharacterCommands(commands.Cog, name='Character Commands'):
             return
         # pull all the embeds from each character and send them back
         for character in characters:
-            e.append(character.embed()) if character.approved else 0
+            e.append(character.embed) if character.approved else 0
         e[0].set_footer(text=f"Kerna - Path of the Wicked | Page 1 of {len(e)}")
         await inter.send(embed=e[0], view=Menu(e), ephemeral=True)
 

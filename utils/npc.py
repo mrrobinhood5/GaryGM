@@ -1,7 +1,7 @@
 from __future__ import annotations
 import disnake
 from disnake import Embed
-from utils.player import Player
+# from utils.player import Player
 from bson import ObjectId
 from typing import List
 from dataclasses import dataclass, field
@@ -11,15 +11,16 @@ from dataclasses import dataclass, field
 DEFAULT_NPC_AVATAR = 'https://i.imgur.com/ET6JF3H.png'
 
 
-@dataclass
+@dataclass()
 class Npc:
-    owner: Player
+    owner: 'Player'
     name: str
     prefix: str
+    shared: bool
+    description: str
     avatar: str = DEFAULT_NPC_AVATAR
     _id: ObjectId = ObjectId()
     rpxp: int = 0
-    users: List[Player] = field(default_factory=list)
 
     def __post_init__(self):
         """ post init processing """
@@ -39,17 +40,23 @@ class Npc:
             "prefix": self.prefix,
             "avatar": self.avatar,
             "owner": self.owner.id,
-            "users": [u.id for u in self.users],
-            "rpxp": self.rpxp
+            "rpxp": self.rpxp,
+            "shared": self.shared,
+            "description": self.description
         }
         return d
 
-    def embed(self):
+    @property
+    def embed(self) -> Embed:
         e = Embed(
             title='NPC Card',
             color=disnake.Color.yellow())
-        e.add_field(name=self.name, value='Description here? Maybe')
-        e.add_field(name="Owner", value=self.owner.name)
-        e.add_field(name="Authorized", value=f'{self.roles}')
+        e.add_field(name=self.name, value=f'Description: {self.description}')
+        e.add_field(name="Owner", value=self.owner.member.name)
+        e.add_field(name="Shared?", value=f'{self.shared}')
+        # e.add_field(name="Authorized", value=f'{[user.member.name for user in self.users]}')
         e.set_thumbnail(url=self.avatar)
         return e
+
+    # def add_authorized(self, player: Player):
+    #     self.users.append(player)

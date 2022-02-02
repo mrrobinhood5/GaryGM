@@ -6,3 +6,5 @@ def is_owner(ctx):
 def is_valid_prefix(msg):
     print("valid prefix")
     return ':' in msg.content
+
+

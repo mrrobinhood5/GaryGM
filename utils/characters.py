@@ -88,6 +88,7 @@ class Character:
         # self.save()  # need a better way of saving the character to DB
         return f"`{self.name}` has traveled to `{destination.name[3:]}`"
 
+    @property
     def embed(self) -> Embed:
         """ Returns an embed representation of the character """
         e = Embed(title=self.name, description=self.backstory, color=Color.blue())

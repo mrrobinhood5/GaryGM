@@ -28,11 +28,19 @@ class ProxyBot(commands.Cog, name='ProxyBot'):
         # determine if its a potential prefix
         if ':' in msg.content and not msg.author.bot:
             prefix = msg.content.split(":")[0].lower().rstrip()
+
+            # before checking your characters, check to see if its an NPC.
+
+
             me, characters = self.get_player_characters(msg.author)
+
+            # check if you own the prefix from one of your characters
             if prefix in [p[0] for p in me.prefixes]:
                 target: Character = [p[1] for p in me.prefixes if prefix == p[0]][0]
             else:
                 return
+
+            # check to see if the character is in the district
             if target.district_name.lower() == msg.channel.category.name.lower():
                 await target.say(msg)
             else:

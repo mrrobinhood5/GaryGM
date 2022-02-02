@@ -3,6 +3,7 @@ from disnake.ext.commands import option_enum, Bot
 from disnake.ext import commands, tasks
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from utils.player import Player
+from utils.npc import Npc
 from utils.characters import Character, CharacterFamiliar, CharacterVariant
 
 
@@ -29,6 +30,7 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
             db_player = await self.db.players.find_one({"member": member.id})
             if db_player:
                 player = Player(_id=db_player["_id"], member=member)
+
                 # fetches all db characters with matching player id, and iterates over them if any are found
                 db_characters = self.db.characters.find({"player": db_player["_id"]})
                 if db_characters:
@@ -70,6 +72,20 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
                                     rpxp=f['rpxp'])
                                 character.add_familiar(familiar)
                         player.add_character(character)
+
+                db_npcs = self.db.npcs.find({"owner": db_player["_id"]})
+                if db_npcs:
+                    async for n in db_npcs:
+                        npc = Npc(owner=player,
+                                  description=n['description'],
+                                  avatar=n['avatar'],
+                                  name=n['name'],
+                                  shared=n['shared'],
+                                  prefix=n['prefix'],
+                                  _id=n['_id'],
+                                  rpxp=n['rpxp'])
+                        player.add_npc(npc)
+                        self.bot.shared_npcs.append(npc) if n['shared'] else 0
                 self.bot.players.append(player)
 
         #
@@ -143,6 +159,9 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
                 if character.variants:
                     for variant in character.variants:
                         self.bot.db.variants.update_one(variant.f, {'$set': variant.to_dict}, upsert=True)
+            for npc in player.npcs:
+                self.bot.db.npcs.update_one(npc.f, {'$set': npc.to_dict()}, upsert=True)
+
 
     @tasks.loop(hours=12)
     async def config_variables(self):
@@ -150,6 +169,12 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
         self.bot.NEW_PLAYER_ROLE = self.bot.guilds[0].get_role(921113949691334706)
         self.bot.QUEST_DM_ROLES = [self.bot.guilds[0].get_role(925450330777473064),
                                    self.bot.guilds[0].get_role(923051032202846218)]
+        self.bot.ALL_DM_ROLES = [
+            self.bot.guilds[0].get_role(925450330777473064),
+            self.bot.guilds[0].get_role(923051032202846218),
+            self.bot.guilds[0].get_role(925449950614130760),
+            self.bot.guilds[0].get_role(925450189278433360)
+        ]
         self.bot.DEFAULT_PC_AVATAR = 'https://i.imgur.com/v47ed3Y.jpg'
         self.bot.CHANGE_LOG_CHANNEL = self.bot.guilds[0].get_channel(930985964472500315)
 
@@ -168,11 +193,19 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
     @tasks.loop(seconds=600.0)
     async def npc_cache(self):
         """ Runs every 10 minutes to maintained cached list of NPC prefixes """
-        npc_cache = []
-        cursor = self.db.npcs.find()
-        async for i in cursor:
-            npc_cache.append({i['prefix']})
-        self.bot.npc_cache = npc_cache
+        # npcs = []
+        # cursor = self.db.npcs.find()
+        # all_members = self.bot.get_all_members()
+        # async for each_npc in cursor:
+        #     owner = [member for member in all_members if member.id == each_npc['owner']]
+        #     npc = Npc(owner=owner,
+        #               name=each_npc['name'],
+        #               prefix=each_npc['prefix'],
+        #               avatar=each_npc['avatar'],
+        #               _id=each_npc['_ic'],
+        #               rpxp=each_npc['rpxp'],
+        #               users=[player for player in self.bot.players if player.id == each_npc])
+        # self.bot.npcs = npc_cache
 
     @config_variables.before_loop
     @npc_cache.before_loop
