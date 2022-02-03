@@ -60,7 +60,11 @@ class NpcCommands(commands.Cog, name='NPCs'):
             'description': description
         }
         npc = Npc(**d)
-        me.add_npc(npc)
+        if npc.shared:
+            self.bot.shared_npcs.append(npc)
+        else:
+            me.add_npc(npc)
+
         await inter.send(embeds=[npc.embed], ephemeral=True)
 
     @npc.sub_command()

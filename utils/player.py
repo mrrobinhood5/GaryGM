@@ -86,6 +86,8 @@ class Player:
                 p.append((familiar.prefix.lower(), familiar))
             for variant in character.variants:
                 p.append((variant.prefix.lower(), variant))
+        for npc in self.npcs:
+            p.append((npc.prefix.lower(), npc))
         return p
 
     def __repr__(self):

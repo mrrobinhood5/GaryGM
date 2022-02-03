@@ -2,6 +2,7 @@ from __future__ import annotations
 from disnake.ext import commands
 from disnake import Message, Webhook, TextChannel, Member
 from utils.player import Player
+from utils.npc import Npc
 from utils.characters import Character, CharacterFamiliar, CharacterVariant
 from typing import List
 
@@ -19,6 +20,10 @@ class ProxyBot(commands.Cog, name='ProxyBot'):
         characters = [character for character in me.characters if character.approved]
         return me, characters
 
+    def get_npc(self, prefix) -> Npc:
+        npc: Npc = [npc for npc in self.bot.shared_npcs if npc.prefix.lower() == prefix.lower()][0]
+        return npc
+
     @commands.Cog.listener()
     async def on_message(self, msg: Message):
         """ listener for npc bots """
@@ -29,11 +34,18 @@ class ProxyBot(commands.Cog, name='ProxyBot'):
         if ':' in msg.content and not msg.author.bot:
             prefix = msg.content.split(":")[0].lower().rstrip()
 
-            # before checking your characters, check to see if its an NPC.
+            # before checking your characters, check to see if its a shared NPC.
+            if prefix in [npc.prefix for npc in self.bot.shared_npcs if npc.shared]:
 
+                # if so, check if you are an NPC DM or above
+                if any([any([r == y for r in self.bot.ALL_DM_ROLES]) for y in msg.author.roles]):
+                    npc = self.get_npc(prefix)
+                    await npc.say(msg)
+                else:
+                    await msg.reply(f'`You are not authorized that NPC', delete_after=10)
+                    await msg.delete(delay=10)
 
             me, characters = self.get_player_characters(msg.author)
-
             # check if you own the prefix from one of your characters
             if prefix in [p[0] for p in me.prefixes]:
                 target: Character = [p[1] for p in me.prefixes if prefix == p[0]][0]
@@ -41,7 +53,9 @@ class ProxyBot(commands.Cog, name='ProxyBot'):
                 return
 
             # check to see if the character is in the district
-            if target.district_name.lower() == msg.channel.category.name.lower():
+            if isinstance(target, Npc):
+                await target.say(msg)
+            elif target.district_name.lower() == msg.channel.category.name.lower():
                 await target.say(msg)
             else:
                 await msg.reply(f'`{target.name}` is not at this location. '

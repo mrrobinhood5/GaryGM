@@ -48,7 +48,7 @@ class Character:
 
     @property
     def dname(self):
-        return self.name + "⚔"
+        return self.name + " - 🗡"
     def update(self, attribute, changes):
         self.__setattr__(attribute, changes)
 
@@ -159,7 +159,7 @@ class CharacterFamiliar:
 
     @property
     def dname(self):
-        return self.name+"🦊"
+        return self.name+" - 🦊"
 
     @property
     def id(self):
@@ -205,7 +205,7 @@ class CharacterVariant(CharacterFamiliar):
 
     @property
     def dname(self):
-        return self.name+"😎"
+        return self.name+" - 🥸"
 
 class CharacterDeleteConfirm(Button):
     def __init__(self):

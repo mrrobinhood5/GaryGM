@@ -1,7 +1,8 @@
 from __future__ import annotations
 import disnake
-from disnake import Embed
+from disnake import Embed, Message
 # from utils.player import Player
+from utils.characters import webhook_process
 from bson import ObjectId
 from typing import List
 from dataclasses import dataclass, field
@@ -57,6 +58,22 @@ class Npc:
         # e.add_field(name="Authorized", value=f'{[user.member.name for user in self.users]}')
         e.set_thumbnail(url=self.avatar)
         return e
+
+    @property
+    def dname(self):
+        return self.name + " - 🤝" if self.shared else self.name + " - 😑"
+
+    async def say(self, msg: Message):
+        content = msg.content[msg.content.index(":") + 1:]
+        if msg.reference:  # this means it was a reply
+            m: Message = msg.reference.cached_message
+            pre = f'> {m.content} \n@{m.author.name} - [jump]({m.jump_url})\n'
+            content = pre + content
+        webhook = await webhook_process(msg.channel)
+        await msg.delete()
+        if msg.content != '':
+            await webhook.send(content, username=self.dname, avatar_url=self.avatar)
+            self.rpxp += 1
 
     # def add_authorized(self, player: Player):
     #     self.users.append(player)
