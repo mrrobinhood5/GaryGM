@@ -145,7 +145,10 @@ class DatabaseActions(commands.Cog, name='Database Cache'):
     async def db_data_dump(self):
         # process the delete_queue
         for character in self.bot.character_delete_queue:
-            await self.db.characters.delete_one(character.f)
+            if isinstance(character, Npc):
+                await self.db.npcs.delete_one(character.f)
+            else:
+                await self.db.characters.delete_one(character.f)
         self.bot.character_delete_queue = []
 
         # players and characters

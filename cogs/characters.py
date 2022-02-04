@@ -118,7 +118,7 @@ class CharacterCommands(commands.Cog, name='Character Commands'):
         # makes the changes
         view.character.update(view.attribute, msg.content)
 
-        await inter.edit_original_message(view=None, embeds=[view.character.embed()])
+        await inter.edit_original_message(view=None, embeds=[view.character.embed])
         await inter.bot.CHANGE_LOG_CHANNEL.send(content=f'`{view.character.name}` changed `{view.attribute}` to `{msg.content}`')
 
     @character.sub_command()

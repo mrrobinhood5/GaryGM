@@ -50,11 +50,12 @@ class Npc:
     @property
     def embed(self) -> Embed:
         e = Embed(
-            title='NPC Card',
+            title=self.name,
             color=disnake.Color.yellow())
-        e.add_field(name=self.name, value=f'Description: {self.description}')
+        e.add_field(name="Description", value=f'{"None" if not self.description else self.description}', inline=False)
+        e.add_field(name="Prefix", value=self.prefix)
         e.add_field(name="Owner", value=self.owner.member.name)
-        e.add_field(name="Shared?", value=f'{self.shared}')
+        e.add_field(name="Shared?", value=f'{"True" if self.shared else "False"}')
         # e.add_field(name="Authorized", value=f'{[user.member.name for user in self.users]}')
         e.set_thumbnail(url=self.avatar)
         return e
@@ -74,6 +75,9 @@ class Npc:
         if msg.content != '':
             await webhook.send(content, username=self.dname, avatar_url=self.avatar)
             self.rpxp += 1
+
+    def update(self, attribute, changes):
+        self.__setattr__(attribute, changes)
 
     # def add_authorized(self, player: Player):
     #     self.users.append(player)
